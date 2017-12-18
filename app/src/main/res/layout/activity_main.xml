@@ -76,12 +76,12 @@
 
 
                 <ImageButton
-                    android:id="@+id/resetBtn"
+                    android:id="@+id/saveTime"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:clickable="true"
-                    android:src="@drawable/ProfileIcon96"
+                    android:src="@drawable/SaveTime96"
                     android:background="?attr/colorPrimary"
                     />
 
@@ -92,7 +92,7 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/ProfileIcon96" />
+                    android:src="@drawable/StartTime96" />
 
                 <ImageButton
                     android:id="@+id/stopBtn"
@@ -101,7 +101,7 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/ProfileIcon96" />
+                    android:src="@drawable/StopTime96" />
 
 
             </LinearLayout>

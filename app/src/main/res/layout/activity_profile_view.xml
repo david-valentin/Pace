@@ -6,4 +6,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.davidvalentin.talaria.ProfileViewController">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/profileViewToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:textAlignment="center"
+        android:scrollbars="vertical"
+        app:title="Text"
+        app:titleTextColor="@android:color/white">
+
+    </android.support.v7.widget.Toolbar>
+
 </android.support.constraint.ConstraintLayout>

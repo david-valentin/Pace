@@ -1,11 +1,52 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme">
         <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">#2294F7</item>
+        <item name="colorPrimaryDark">#295984</item>
+        <item name="textColorPrimary">#FFB74C</item>
+        <item name="colorAccent">#F08A4B</item>
     </style>
+
+    <!-- Styling for the the Toolbar -->
+    <style name="TopToolbarTheme">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">#2294F7</item>
+        <item name="colorPrimaryDark">#295984</item>
+        <item name="textColorPrimary">#FFB74C</item>
+        <item name="colorAccent">#F08A4B</item>
+        <item name="android:minHeight">50dp</item>
+    </style>
+
+    <!-- Styling for Text in the Toolbar -->
+    <style name="ToolbarTextThemeRight">
+        <item name="android:textAlignment">center</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textColor">#FFFF</item>
+        <item name="android:layout_width">match_parent</item>
+    </style>
+
+    <!--Styling for ImageView for Buttons on the Rightside of the Toolbar -->
+    <style name="ImageButtonThemeRight">
+        <item name="android:paddingRight">5dp</item>
+        <item name="android:paddingLeft">20dp</item>
+    </style>
+
+
+    <!--Styling for BottomToolbar Buttons -->
+    <style name="BottomToolbarTheme">
+        <item name="android:layout_width">200dp</item>
+        <item name="android:background">#2294F7</item>
+
+    </style>
+
+    <!--Styling for ImageView Buttons -->
+    <style name="ImageButtonTheme">
+        <item name="android:color">#2294F7</item>
+    </style>
+
+
+
 
 </resources>

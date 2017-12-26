@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="5dp"
-                android:src="@drawable/TalariaLogo96" />
+                android:src="@drawable/talaria_logo_96" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -44,8 +44,8 @@
                 android:background="?attr/colorPrimary"
                 android:theme="@style/ImageButtonThemeRight"
                 android:layout_alignParentTop="true"
-                android:onClick="goToProfileView"
-                android:src="@drawable/ProfileIcon96" />
+                android:onClick="onClickGoToProfileView"
+                android:src="@drawable/profile_icon_96" />
 
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
@@ -65,7 +65,6 @@
             android:layout_alignParentStart="true"
             app:theme="@style/BottomToolbarTheme">
 
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -74,15 +73,15 @@
                 android:background="#2294F7"
                 android:weightSum="3">
 
-
                 <ImageButton
                     android:id="@+id/saveTime"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:clickable="true"
-                    android:src="@drawable/SaveTime96"
+                    android:src="@drawable/save_time_96"
                     android:background="?attr/colorPrimary"
+                    android:onClick="onClickSaveTime"
                     />
 
                 <ImageButton
@@ -92,7 +91,9 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/StartTime96" />
+                    android:src="@drawable/start_time_96"
+                    android:onClick="onClickStartTimer"
+                    />
 
                 <ImageButton
                     android:id="@+id/stopBtn"
@@ -101,7 +102,9 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/StopTime96" />
+                    android:src="@drawable/stop_time_96"
+                    android:onClick="onClickStopTimer"
+                    />
 
 
             </LinearLayout>

@@ -1,5 +1,6 @@
 package com.example.davidvalentin.talaria;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,9 +18,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     *  onClickGoToProfileView
+     *      1. Starts the ProfileViewController Activity and loads the layout
      * */
-    public void goToProfileView(View view) {
+    public void onClickGoToProfileView(View view) {
+        Log.d(TAG, "onClickGoToProfileView");
 
+        Intent profileView = new Intent(this, ProfileViewController.class);
+        startActivity(profileView);
+
+    }
+
+    /**
+     *  onClickStartTimer
+     *      1. Starts the service and updates the text for the
+     *          a. timer
+     *          b. miles ran
+     * */
+    public void onClickStartTimer(View view) {
+        Log.d(TAG, "onClickStartTimer");
+
+    }
+
+    public void onClickSaveTime(View view) {
+        Log.d(TAG, "onClickSaveTime");
+
+    }
+
+    public void onClickStopTimer(View view) {
+        Log.d(TAG, "onClickStopTimer");
     }
 }

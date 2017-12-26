@@ -1,11 +1,10 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="AppTheme">
+    <!-- Base application theme that extends AppCompact with no Action Bar -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">#2294F7</item>
         <item name="colorPrimaryDark">#295984</item>
-        <item name="textColorPrimary">#FFB74C</item>
         <item name="colorAccent">#F08A4B</item>
     </style>
 
@@ -14,7 +13,6 @@
         <!-- Customize your theme here. -->
         <item name="colorPrimary">#2294F7</item>
         <item name="colorPrimaryDark">#295984</item>
-        <item name="textColorPrimary">#FFB74C</item>
         <item name="colorAccent">#F08A4B</item>
         <item name="android:minHeight">50dp</item>
     </style>
@@ -38,7 +36,6 @@
     <style name="BottomToolbarTheme">
         <item name="android:layout_width">200dp</item>
         <item name="android:background">#2294F7</item>
-
     </style>
 
 </resources>

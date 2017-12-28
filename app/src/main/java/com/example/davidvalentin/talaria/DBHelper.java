@@ -18,7 +18,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String TAG = "DBHelper";
 
-    private static final String TABLE_NAME = "talaria";
+    private static final String TABLE_NAME = "        public long getCurrentDistance() {\n" +
+            "            return currentDistance;\n" +
+            "        }\n" +
+            "\n" +
+            "        public void setCurrentDistance(long currentDistance) {\n" +
+            "            this.currentDistance = currentDistance;\n" +
+            "        }\n";
 
     public DBHelper(Context context, String name, SQLiteDatabase.CursorFactory factory,
                     int version) {
@@ -59,14 +65,13 @@ public class DBHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "onUpgrade");
-        db.execSQL("DROP TABLE IF EXISTS recipes");
+        db.execSQL("DROP TABLE IF EXISTS talaria");
         onCreate(db);
     }
 
     /*
     *   GETTERS AND SETTERS HERE:
     * */
-
     public static String getTableName() {
         return TABLE_NAME;
     }

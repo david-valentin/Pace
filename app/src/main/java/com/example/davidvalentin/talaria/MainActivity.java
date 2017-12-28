@@ -15,15 +15,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String onClickColorChange = "#1D78C6";
     private static final String onClickOGColor = "#2294F7";
 
-
     // UI Components:
     private ImageButton stopBtn = null;
     private ImageButton saveBtn = null;
     private ImageButton startBtn = null;
     private ImageButton profileBtn = null;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,8 +92,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }, 0);
-
-
-
     }
+
 }

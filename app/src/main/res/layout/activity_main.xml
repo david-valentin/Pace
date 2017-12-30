@@ -40,6 +40,14 @@
                 android:src="@drawable/profile_icon_96"
                 android:theme="@style/ImageButtonThemeRight" />
 
+            <TextView
+                android:id="@+id/talariaHeaderText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="Talaria"
+                android:theme="@style/HeaderText" />
+
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
@@ -124,9 +132,9 @@
                     android:layout_alignParentStart="true"
                     android:layout_alignParentTop="true"
                     android:layout_marginTop="165dp"
-                    android:text="Miles"
+                    android:text="Meters"
                     android:textAlignment="center"
-                    android:theme="@style/CurrentDataText" />
+                    android:theme="@style/CurrentDataHeaderText" />
 
                 <TextView
                     android:id="@+id/timerText"
@@ -147,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentStart="true"
                     android:layout_below="@+id/distanceText"
-                    android:theme="@style/CurrentDataText"
+                    android:theme="@style/CurrentDataHeaderText"
 
                     android:text="Time"
                     android:textAlignment="center" />
@@ -161,6 +169,15 @@
                     android:text="0.00"
                     android:textAlignment="center"
                     android:theme="@style/CurrentDataText" />
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_above="@+id/distanceText"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="57dp"
+                    app:srcCompat="@drawable/heart_run_96" />
 
             </RelativeLayout>
         </LinearLayout>

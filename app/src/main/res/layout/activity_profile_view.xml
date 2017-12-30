@@ -14,9 +14,27 @@
         android:minHeight="?attr/actionBarSize"
         android:textAlignment="center"
         android:scrollbars="vertical"
-        app:title="Text"
+        app:title="Profile"
         app:titleTextColor="@android:color/white">
 
+
+
     </android.support.v7.widget.Toolbar>
+
+    <LinearLayout
+        android:id="@+id/runningStatsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent" >
+
+        <ListView
+            android:id="@+id/runningStatsListView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+
+    </LinearLayout>
 
 </android.support.constraint.ConstraintLayout>

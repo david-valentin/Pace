@@ -74,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     *  onDestroy needs destroy the serviceConnection
+     *  onDestroy
+     *   Destroys the serviceConnection
      * */
     @Override
     public void onDestroy() {
@@ -153,15 +154,14 @@ public class MainActivity extends AppCompatActivity {
                         elapsedTime += 1; //increase every sec
                         mHandler.obtainMessage(1).sendToTarget();
                     } else {
-                        Log.d(TAG, "Timer is not running.");
+                        Log.d(TAG, "Timer is not running."); // Its still active though
                         timer.cancel();
-
                     }
 
                 }
             }, 0, 1000);
         } else {
-            Toast alertToast = createToast("Timer is already running. Click Stop.");
+            Toast alertToast = createToast("Timer is already running. Click Stop to stop the Timer");
             alertToast.show();
         }
     }
@@ -174,7 +174,6 @@ public class MainActivity extends AppCompatActivity {
     protected void stopTimer() {
         Log.d(TAG, "startTimer");
         setTimerRunning(false);
-//        timer.cancel();
     }
 
 

@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickStopTimer(View view) {
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
-        runningTrackerService.stop();
+        RunningService.stop();
 
         Log.d(TAG, "onClickStopTimer");
     }
@@ -190,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onServiceDisconnected");
             // Decouple the service and unregister the callback from it
             RunningServiceBinder.unregisterCallback(callback);
-            RunnerService = null;
+            RunningServiceBinder = null;
         }
     };
 

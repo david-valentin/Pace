@@ -105,7 +105,7 @@ public class RunningTrackerService extends Service {
      *      1. Must keep playing the song => Where the service comes into play
      *      2. Continues playing the song till the song is over
      * */
-    public void play() {
+    public void run() {
         progress.running = true;
         runner.run();
     }
@@ -129,6 +129,14 @@ public class RunningTrackerService extends Service {
         progress.running = false;
         runner.stop();
     }
+
+    /*
+    *   Running the service
+    *
+    * */
+    public boolean isRunning(){
+        return RunningTrackerService.this.isRunning();
+    };
 
 
     /**

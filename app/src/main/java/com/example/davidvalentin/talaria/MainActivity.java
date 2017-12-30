@@ -15,6 +15,7 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
@@ -28,6 +29,11 @@ public class MainActivity extends AppCompatActivity {
     private static final String onClickOGColor = "#2294F7";
     private static int elapsedTime = 0;
 
+    // Service Component
+    private RunningTrackerService.RunningServiceBinder RunningServiceBinder = null;
+    private RunningTrackerService RunningService = null;
+
+
     // UI/XML  Components:
     private ImageButton stopBtn = null;
     private ImageButton saveBtn = null;
@@ -36,10 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView distanceText;
     private TextView timerText;
 
-
-    // Object Components:
-
-    private RunningTrackerService.RunningServiceBinder RunnerService = null;
 
 
     @Override
@@ -90,15 +92,39 @@ public class MainActivity extends AppCompatActivity {
     protected void startTimer() {
         boolean isTimerRunning = true;
         Timer timer = new Timer();
-        
-        timer.scheduleAtFixedRate(new TimerTask() {
 
-            public void run() {
-                elapsedTime += 1; //increase every sec
-                mHandler.obtainMessage(1).sendToTarget();
-            }
-        }, 0, 1000);
+        // Need  a switch statement to check for all the enums
+        if (!RunningService.isRunning()) {
+            RunningService.run();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    elapsedTime += 1; //increase every sec
+                    mHandler.obtainMessage(1).sendToTarget();
+                }
+            }, 0, 1000);
+        } else {
+            Toast alertToast = createToast("Timer is already running. Click Stop.");
+            alertToast.show();
+        }
+    }
 
+    protected void stopTimer() {
+        boolean isTimerRunning = true;
+        Timer timer = new Timer();
+
+        // Need  a switch statement to check for all the enums
+        if (!RunningService.isRunning()) {
+            RunningService.run();
+            timer.scheduleAtFixedRate(new TimerTask() {
+                public void run() {
+                    elapsedTime += 1; //increase every sec
+                    mHandler.obtainMessage(1).sendToTarget();
+                }
+            }, 0, 1000);
+        } else {
+            Toast alertToast = createToast("Timer is already running. Click Stop.");
+            alertToast.show();
+        }
     }
 
 
@@ -121,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
     public void onClickStopTimer(View view) {
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
+        runningTrackerService.stop();
+
         Log.d(TAG, "onClickStopTimer");
     }
 
@@ -153,15 +181,15 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             // Once the service is connected to the UI of the main activity
             Log.d(TAG, "onServiceConnected");
-            RunnerService = (RunningTrackerService.RunningServiceBinder) service;
-            RunnerService.registerCallback(callback);
+            RunningServiceBinder = (RunningTrackerService.RunningServiceBinder) service;
+            RunningServiceBinder.registerCallback(callback);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "onServiceDisconnected");
             // Decouple the service and unregister the callback from it
-            RunnerService.unregisterCallback(callback);
+            RunningServiceBinder.unregisterCallback(callback);
             RunnerService = null;
         }
     };
@@ -197,6 +225,42 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+
+    public Toast createToast(String msg) {
+        Context context = getApplicationContext();
+        int duration = Toast.LENGTH_SHORT;
+        Toast toast = Toast.makeText(context, msg, duration);
+        return toast;
+    }
+
+//    public void onClickChangeBtnColor(final ImageButton btn) {
+//        Log.d(TAG, "onClickChangeBtnColor");
+//
+//        final Handler handler = new Handler();
+//
+//        final Runnable r = new Runnable() {
+//
+//            final long startTime = System.currentTimeMillis();
+//
+//            public void run() {
+//
+//                if (System.currentTimeMillis() - startTime < 1000) {
+//                    Log.d(TAG, "Handler is running");
+//
+//                    btn.setBackgroundColor(Color.parseColor(onClickColorChange));
+//                    handler.postDelayed(this, 0);
+//                } else {
+//                    Log.d(TAG, "Handler is dead");
+//                    btn.setBackgroundColor(Color.parseColor(onClickOGColor));
+//                    handler.removeCallbacks(this);
+//                }
+//            }
+//        };
+//
+//        handler.postDelayed(r, 1000);
+//
+//    }
 
 
     /**

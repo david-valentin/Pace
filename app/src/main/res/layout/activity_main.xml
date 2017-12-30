@@ -18,9 +18,9 @@
         android:theme="@style/TopToolbarTheme">
 
         <RelativeLayout
+            android:id="@+id/relTopToolbarContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
+            android:layout_height="match_parent">
 
             <ImageView
                 android:id="@+id/logoIcon"
@@ -29,23 +29,16 @@
                 android:paddingLeft="5dp"
                 android:src="@drawable/talaria_logo_96" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:text="Talaria"
-                android:theme="@style/ToolbarTextThemeRight" />
-
             <ImageButton
                 android:id="@+id/profileBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:background="?attr/colorPrimary"
-                android:theme="@style/ImageButtonThemeRight"
                 android:layout_alignParentTop="true"
+                android:background="?attr/colorPrimary"
                 android:onClick="onClickGoToProfileView"
-                android:src="@drawable/profile_icon_96" />
+                android:src="@drawable/profile_icon_96"
+                android:theme="@style/ImageButtonThemeRight" />
 
         </RelativeLayout>
     </android.support.v7.widget.Toolbar>
@@ -61,55 +54,116 @@
             android:id="@+id/bottomToolBar"
             android:layout_width="match_parent"
             android:layout_height="50dp"
+            android:background="#2294F7"
+
             android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"
             app:theme="@style/BottomToolbarTheme">
 
             <LinearLayout
+                android:id="@+id/bottomToolbarContainer"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:id="@+id/bottomToolbarContainer"
-                android:orientation="horizontal"
+                android:layout_alignParentStart="true"
                 android:background="#2294F7"
+                android:orientation="horizontal"
                 android:weightSum="3">
 
                 <ImageButton
                     android:id="@+id/saveBtn"
-                    android:layout_width="11dp"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:clickable="true"
-                    android:src="@drawable/save_time_96"
                     android:background="?attr/colorPrimary"
+                    android:clickable="true"
                     android:onClick="onClickSaveTime"
-                    />
+                    android:src="@drawable/save_time_96" />
 
                 <ImageButton
                     android:id="@+id/startBtn"
-                    android:layout_width="11dp"
+                    android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/start_time_96"
+                    android:clickable="true"
                     android:onClick="onClickStartTimer"
-                    />
+                    android:src="@drawable/start_time_96" />
 
                 <ImageButton
                     android:id="@+id/stopBtn"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:clickable="true"
                     android:background="?attr/colorPrimary"
-                    android:src="@drawable/stop_time_96"
+                    android:clickable="true"
                     android:onClick="onClickStopTimer"
-                    />
+                    android:src="@drawable/stop_time_96" />
 
 
             </LinearLayout>
 
         </android.support.v7.widget.Toolbar>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_marginBottom="50dp"
+            >
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                >
+
+                <TextView
+                    android:id="@+id/distanceMeasurementText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="165dp"
+                    android:text="Miles"
+                    android:textAlignment="center"
+                    android:theme="@style/CurrentDataText" />
+
+                <TextView
+                    android:id="@+id/timerText"
+                    android:layout_width="match_parent"
+
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/timeHeader"
+                    android:text="00:00"
+                    android:theme="@style/CurrentDataText"
+
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/timeHeader"
+                    android:layout_width="match_parent"
+
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/distanceText"
+                    android:theme="@style/CurrentDataText"
+
+                    android:text="Time"
+                    android:textAlignment="center" />
+
+                <TextView
+                    android:id="@+id/distanceText"
+                    android:layout_width="match_parent"
+                    android:theme="@style/CurrentDataText"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@+id/distanceMeasurementText"
+                    android:text="00:00"
+                    android:textAlignment="center" />
+
+            </RelativeLayout>
+        </LinearLayout>
 
 
     </RelativeLayout>

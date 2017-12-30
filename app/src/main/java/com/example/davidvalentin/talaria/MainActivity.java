@@ -1,61 +1,111 @@
 package com.example.davidvalentin.talaria;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private static final String onClickColorChange = "#1D78C6";
     private static final String onClickOGColor = "#2294F7";
+    private static int elapsedTime = 0;
 
-    // UI Components:
+    // UI/XML  Components:
     private ImageButton stopBtn = null;
     private ImageButton saveBtn = null;
     private ImageButton startBtn = null;
     private ImageButton profileBtn = null;
+    private TextView distanceText;
+    private TextView timerText;
+
+
+    // Object Components:
+
+    private RunningTrackerService.RunningServiceBinder RunnerService = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        this.startService(new Intent(this, RunningTrackerService.class));
+        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     /**
      *  onClickGoToProfileView
-     *      1. Starts the ProfileViewController Activity and loads the layout
+     *      Starts the ProfileViewController Activity and loads the layout
+     *  @param view This is the view context of the current button
      * */
     public void onClickGoToProfileView(View view) {
         Log.d(TAG, "onClickGoToProfileView");
         // The thread is doing something funky and destroying the main activity and creating a whole activity from a different thread
-//        profileBtn = findViewById(R.id.profileBtn);
-//        onClickChangeBtnColor(profileBtn);
+        // profileBtn = findViewById(R.id.profileBtn);
+        // onClickChangeBtnColor(profileBtn);
         Intent profileView = new Intent(this, ProfileViewController.class);
         startActivity(profileView);
     }
 
     /**
      *  onClickStartTimer
-     *      1. Starts the service and updates the text for the
-     *          a. timer
-     *          b. miles ran
+     *      Creates/starts the service and the timer and updates the UI Textviews
+     *  @param view This is the view context of the current button
      * */
     public void onClickStartTimer(View view) {
         Log.d(TAG, "onClickStartTimer");
         startBtn = findViewById(R.id.startBtn);
         onClickChangeBtnColor(startBtn);
+        startTimer();
     }
+
+    // This is kinda ugly
+    public Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            timerText = (TextView) findViewById(R.id.timerText);
+            timerText.setText(timeFormat(elapsedTime)); //this is the textview
+        }
+    };
+
+    // This is kinda ugly
+    protected void startTimer() {
+        boolean isTimerRunning = true;
+        Timer timer = new Timer();
+        
+        timer.scheduleAtFixedRate(new TimerTask() {
+
+            public void run() {
+                elapsedTime += 1; //increase every sec
+                mHandler.obtainMessage(1).sendToTarget();
+            }
+        }, 0, 1000);
+
+    }
+
 
     /**
      *  onClickSaveTime
-     *      1. Stops and saves the current time to the database
+     *      Stops and kills ther service and sends a query to save the current time and distance ran to the database
+     *  @param view This is the view context of the current button
      * */
     public void onClickSaveTime(View view) {
         Log.d(TAG, "onClickSaveTime");
@@ -65,8 +115,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      *  onClickStopTimer
-     *      1. Stops the current timer from running and the tracking
-     *
+     *      Stops the service
+     *  @param view This is the view context of the current button
      * */
     public void onClickStopTimer(View view) {
         stopBtn = findViewById(R.id.stopBtn);
@@ -74,6 +124,86 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickStopTimer");
     }
 
+    /*
+    *   Helped from other class mate - uses the timeFormat to format the song in minutes properly
+    *   and grabs the maxDuration
+    *   Src: https://stackoverflow.com/questions/25796237/how-to-display-song-duration
+    * */
+    CallbackInterface callback = new CallbackInterface() {
+        @Override
+        public void distanceRan(final long currentDistance) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // Updates
+                    // Updates the text of the timer
+                    distanceText = (TextView) findViewById(R.id.timerText);
+                    distanceText.setText((int) currentDistance);
+                }
+            });
+        }
+    };
+
+    /**
+     *  Private member variable that initializes the Service connection object
+     * */
+    private ServiceConnection serviceConnection = new ServiceConnection()
+    {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            // Once the service is connected to the UI of the main activity
+            Log.d(TAG, "onServiceConnected");
+            RunnerService = (RunningTrackerService.RunningServiceBinder) service;
+            RunnerService.registerCallback(callback);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected");
+            // Decouple the service and unregister the callback from it
+            RunnerService.unregisterCallback(callback);
+            RunnerService = null;
+        }
+    };
+
+
+    /**
+     *  PUT IN UTIL FUNCTIONS CLASS?
+     *
+     *  Help from Justin Li
+     *  Src: https://stackoverflow.com/questions/27954303/how-to-format-a-songs-duration-time-into-minutes-and-seconds
+     *
+     * */
+    private String timeFormat(int seconds) {
+
+        String start = "0:00";
+        // If its less
+        try {
+            if (seconds == -1){
+                return start;
+            }
+            int minute = seconds / 60;
+            // Modulo
+            int remainingSeconds = seconds % 60;
+            if (remainingSeconds < 10) {
+                // Grabs the remaining value and adds ito the end
+                return String.valueOf(minute) + ":0" + String.valueOf(remainingSeconds);
+            } else {
+                // Otherwise return the whole value
+                return String.valueOf(minute) + ":" + String.valueOf(remainingSeconds);
+            }
+        } catch (Exception e) {
+            return start;
+        }
+
+    }
+
+
+    /**
+     * PUT IN UTIL FUNCTIONS CLASS?
+     * onClickChangeBtnColor
+     *
+     * */
     public void onClickChangeBtnColor(final ImageButton btn) {
         Log.d(TAG, "onClickChangeBtnColor");
         final long startTime = System.currentTimeMillis();
@@ -93,5 +223,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 0);
     }
+
 
 }

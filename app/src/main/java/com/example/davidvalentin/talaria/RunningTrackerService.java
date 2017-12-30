@@ -40,7 +40,7 @@ public class RunningTrackerService extends Service {
     private NotificationManager mNotificationManager;
 
     // Instance of the thread class
-    private RunningThread progress;
+    private RunnerThread mRunnerThread;
 
     // Runner class - instantiate it with the Service Context
     private Runner runner = new Runner(this);
@@ -55,6 +55,9 @@ public class RunningTrackerService extends Service {
     public void onCreate() {
         // TODO Auto-generated method stub
         Log.d(TAG, "onCreate");
+        
+        mRunnerThread = new RunnerThread();
+        
         super.onCreate();
     }
 
@@ -64,8 +67,8 @@ public class RunningTrackerService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        progress.threadRunning = false;
-        progress = null;
+        mRunnerThread.threadRunning = false;
+        mRunnerThread = null;
         super.onDestroy();
     }
 
@@ -106,27 +109,27 @@ public class RunningTrackerService extends Service {
      *      2. Continues playing the song till the song is over
      * */
     public void run() {
-        progress.running = true;
+        mRunnerThread.running = true;
         runner.run();
     }
 
     /**
      *  Pauses the current song
-     *      1. Pauses the progress bar => grabs the int value for the progress bar and set it to that
+     *      1. Pauses the mRunnerThread bar => grabs the int value for the mRunnerThread bar and set it to that
      *      2. Keep track of the place where the song was stopped
      * */
     public void save() {
-        progress.running = false;
+        mRunnerThread.running = false;
         runner.stop();
     }
 
 
     /**
      *  Stops the current song
-     *      1. Resets the progress bar
+     *      1. Resets the mRunnerThread bar
      * */
     public void stop() {
-        progress.running = false;
+        mRunnerThread.running = false;
         runner.stop();
     }
 
@@ -142,7 +145,7 @@ public class RunningTrackerService extends Service {
     /**
      *  Thread Class
      * */
-    public class RunningThread extends Thread implements Runnable {
+    public class RunnerThread extends Thread implements Runnable {
 
         // Bool object to check if we are running or not
         public boolean running = false;
@@ -156,7 +159,7 @@ public class RunningTrackerService extends Service {
         public int time = 0;
 
 
-        public RunningThread() {
+        public RunnerThread() {
             // Starts the thread
             this.start();
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);

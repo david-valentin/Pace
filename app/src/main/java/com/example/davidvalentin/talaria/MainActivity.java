@@ -1,9 +1,13 @@
 package com.example.davidvalentin.talaria;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
@@ -27,11 +31,25 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final String onClickColorChange = "#1D78C6";
     private static final String onClickOGColor = "#2294F7";
+    private static final int CHANNEL_ID = 1;
     private static int elapsedTime = 0;
 
-    // Service Component
+    // Service Components
     private RunningTrackerService.RunningServiceBinder RunningServiceBinder = null;
     private RunningTrackerService RunningService = null;
+
+    // Logical Member Variables
+    private boolean isTimerRunning = false;
+    private Timer timer;
+
+
+    // Handler member variable to change the timer text
+    public Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            timerText = (TextView) findViewById(R.id.timerText);
+            timerText.setText(timeFormat(elapsedTime)); //this is the textview
+        }
+    };
 
 
     // UI/XML  Components:
@@ -53,6 +71,45 @@ public class MainActivity extends AppCompatActivity {
         this.startService(new Intent(this, RunningTrackerService.class));
         this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
+
+    /**
+     *  onDestroy needs destroy the serviceConnection
+     * */
+    @Override
+    public void onDestroy() {
+        if(serviceConnection!=null) {
+            unbindService(serviceConnection);
+            serviceConnection = null;
+        }
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+    }
+
+
+    /**
+     *
+     * */
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+
+        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+        Resources r = getResources();
+        Notification notification = new android.support.v4.app.NotificationCompat.Builder(this)
+                .setTicker(("message"))
+                .setSmallIcon(android.R.drawable.ic_menu_report_image)
+                .setContentTitle("title")
+                .setContentText("text")
+                .setContentIntent(pi)
+                .setAutoCancel(false)
+                .build();
+
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(CHANNEL_ID, notification);
+        super.onPause();
+    }
+
 
     /**
      *  onClickGoToProfileView
@@ -80,26 +137,27 @@ public class MainActivity extends AppCompatActivity {
         startTimer();
     }
 
-    // This is kinda ugly
-    public Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            timerText = (TextView) findViewById(R.id.timerText);
-            timerText.setText(timeFormat(elapsedTime)); //this is the textview
-        }
-    };
 
     // This is kinda ugly
     protected void startTimer() {
-        boolean isTimerRunning = true;
-        Timer timer = new Timer();
+        Log.d(TAG, "startTimer");
 
-        // Need  a switch statement to check for all the enums
-        if (!RunningService.isRunning()) {
-            RunningService.run();
+        timer = new Timer();
+
+        if (isTimerRunning() == false) {
+            setTimerRunning(true);
             timer.scheduleAtFixedRate(new TimerTask() {
                 public void run() {
-                    elapsedTime += 1; //increase every sec
-                    mHandler.obtainMessage(1).sendToTarget();
+                    if (isTimerRunning()) {
+                        Log.d(TAG, "Timer is running.");
+                        elapsedTime += 1; //increase every sec
+                        mHandler.obtainMessage(1).sendToTarget();
+                    } else {
+                        Log.d(TAG, "Timer is not running.");
+                        timer.cancel();
+
+                    }
+
                 }
             }, 0, 1000);
         } else {
@@ -108,23 +166,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    protected void stopTimer() {
-        boolean isTimerRunning = true;
-        Timer timer = new Timer();
 
-        // Need  a switch statement to check for all the enums
-        if (!RunningService.isRunning()) {
-            RunningService.run();
-            timer.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    elapsedTime += 1; //increase every sec
-                    mHandler.obtainMessage(1).sendToTarget();
-                }
-            }, 0, 1000);
-        } else {
-            Toast alertToast = createToast("Timer is already running. Click Stop.");
-            alertToast.show();
-        }
+    /*
+    * stopTimer
+    *
+    * */
+    protected void stopTimer() {
+        Log.d(TAG, "startTimer");
+        setTimerRunning(false);
+//        timer.cancel();
     }
 
 
@@ -147,8 +197,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickStopTimer(View view) {
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
-        RunningService.stop();
-
+        stopTimer();
         Log.d(TAG, "onClickStopTimer");
     }
 
@@ -287,6 +336,21 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 0);
     }
+
+    /*
+    *
+    *   Getters and Setters
+    *
+    * */
+
+    public boolean isTimerRunning() {
+        return isTimerRunning;
+    }
+
+    public void setTimerRunning(boolean timerRunning) {
+        isTimerRunning = timerRunning;
+    }
+
 
 
 }

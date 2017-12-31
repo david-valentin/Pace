@@ -43,15 +43,6 @@ public class MainActivity extends AppCompatActivity {
     private Timer timer;
 
 
-    // Handler member variable to change the timer text
-    public Handler mHandler = new Handler() {
-        public void handleMessage(Message msg) {
-            timerText = (TextView) findViewById(R.id.timerText);
-            timerText.setText(timeFormat(elapsedTime)); //this is the textview
-        }
-    };
-
-
     // UI/XML  Components:
     private ImageButton stopBtn = null;
     private ImageButton saveBtn = null;
@@ -61,7 +52,12 @@ public class MainActivity extends AppCompatActivity {
     private TextView timerText;
 
 
-
+    /**
+     * starts the service and binds the service to the current Context
+     *
+     * @param savedInstanceState is the bundle from the Activity
+     *
+     * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
@@ -74,8 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     *  onDestroy
-     *   Destroys the serviceConnection
+     *  Destroys the serviceConnection by unbinding the binder object
      * */
     @Override
     public void onDestroy() {
@@ -89,15 +84,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     *  onPause is part of the activity lifecyle
+     *  onPause creates a notification and alerts the notification manager
      *
      * */
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
         Notification mNotification = createNotification("Still Running", "Talaria");
-        NotificationManager mNotificationManager = new NotificationManager();
-
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(CHANNEL_ID, mNotification);
         super.onPause();
     }
 
@@ -129,6 +124,16 @@ public class MainActivity extends AppCompatActivity {
         startTimer();
     }
 
+    /**
+     *  Creates the handler object which handleMessage updates the textview of the timerText
+     *
+     * */
+    public Handler mHandler = new Handler() {
+        public void handleMessage(Message msg) {
+            timerText = (TextView) findViewById(R.id.timerText);
+            timerText.setText(timeFormat(elapsedTime)); //this is the textview
+        }
+    };
 
     /**
      *  startTimer creates a new Timer object

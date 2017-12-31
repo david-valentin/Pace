@@ -7,7 +7,7 @@
         android:allowBackup="true"
         android:icon="@drawable/talaria_logo_96"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@drawable/talaria_logo_96"
         android:supportsRtl="true"
         >
         <activity

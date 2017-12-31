@@ -173,7 +173,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="29dp"
+                    android:layout_marginTop="24dp"
                     app:srcCompat="@drawable/heart_run_96" />
 
             </RelativeLayout>

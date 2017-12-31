@@ -89,32 +89,22 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
+     *  onPause is part of the activity lifecyle
      *
      * */
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
+        Notification mNotification = createNotification("Still Running", "Talaria");
+        NotificationManager mNotificationManager = new NotificationManager();
 
-        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
-        Resources r = getResources();
-        Notification notification = new android.support.v4.app.NotificationCompat.Builder(this)
-                .setTicker(("message"))
-                .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                .setContentTitle("title")
-                .setContentText("text")
-                .setContentIntent(pi)
-                .setAutoCancel(false)
-                .build();
-
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(CHANNEL_ID, notification);
         super.onPause();
     }
 
 
     /**
-     *  onClickGoToProfileView
-     *      Starts the ProfileViewController Activity and loads the layout
+     *  Starts the ProfileViewController Activity and loads the layout
+     *
      *  @param view This is the view context of the current button
      * */
     public void onClickGoToProfileView(View view) {
@@ -127,9 +117,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  onClickStartTimer
-     *      Creates/starts the service and the timer and updates the UI Textviews
+     *  Creates/starts the service and the timer and updates the UI Textviews
+     *
      *  @param view This is the view context of the current button
+     *
      * */
     public void onClickStartTimer(View view) {
         Log.d(TAG, "onClickStartTimer");
@@ -139,11 +130,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // This is kinda ugly
+    /**
+     *  startTimer creates a new Timer object
+     *      1. if the isTimer is true
+     *          a. runs the timer object which increments the global variable elapsed time
+     *             by 1, and it also disables the startBtn to false
+     *      2. if the isTimer is false
+     *          a. it cancels the timer in the run method
+     *
+     * */
     protected void startTimer() {
         Log.d(TAG, "startTimer");
-
-        timer = new Timer();
+        timer = new Timer("timer", true);
 
         if (isTimerRunning() == false) {
             setTimerRunning(true);
@@ -153,33 +151,45 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "Timer is running.");
                         elapsedTime += 1; //increase every sec
                         mHandler.obtainMessage(1).sendToTarget();
+                        startBtn.setEnabled(false); // Had to disable the button because I continued to spawn new timer objects
                     } else {
-                        Log.d(TAG, "Timer is not running."); // Its still active though
+                        Log.d(TAG, "Timer is cancelled.");
                         timer.cancel();
                     }
 
                 }
             }, 0, 1000);
-        } else {
-            Toast alertToast = createToast("Timer is already running. Click Stop to stop the Timer");
+        } else if (isTimerRunning() == false && startBtn.isEnabled() == false) {
+            Toast alertToast = createToast("Timer is already running. Click Stop to stop the timer");
             alertToast.show();
         }
+
+
     }
 
 
     /*
-    * stopTimer
+    *  stopTimer re-enables the startBtn component and isTimerRunning to false
+    *  otherwise, it creates a toast alert that timer has already been clicked.
     *
     * */
     protected void stopTimer() {
-        Log.d(TAG, "startTimer");
-        setTimerRunning(false);
+
+        if (isTimerRunning()) {
+            Log.d(TAG, "stopTimer");
+            setTimerRunning(false);
+            startBtn.setEnabled(true);
+        } else {
+            Toast alertToast = createToast("Timer is already stopped. Click Start to resume the timer.");
+            alertToast.show();
+        }
+
     }
 
 
     /**
-     *  onClickSaveTime
-     *      Stops and kills ther service and sends a query to save the current time and distance ran to the database
+     *  Stops and kills ther service and sends a query to save the current time and distance ran to the database
+     *
      *  @param view This is the view context of the current button
      * */
     public void onClickSaveTime(View view) {
@@ -189,8 +199,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  onClickStopTimer
-     *      Stops the service
+     *  When clicked, stops the timer
+     *
      *  @param view This is the view context of the current button
      * */
     public void onClickStopTimer(View view) {
@@ -222,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      *  Private member variable that initializes the Service connection object
+     *
      * */
     private ServiceConnection serviceConnection = new ServiceConnection()
     {
@@ -274,7 +285,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-
+    /**
+     * Creates and returns a toast object
+     *
+     * @param msg - the msg string is the content associated with the toast
+     * @return Toast - the toast object returned
+     * */
     public Toast createToast(String msg) {
         Context context = getApplicationContext();
         int duration = Toast.LENGTH_SHORT;
@@ -282,34 +298,29 @@ public class MainActivity extends AppCompatActivity {
         return toast;
     }
 
-//    public void onClickChangeBtnColor(final ImageButton btn) {
-//        Log.d(TAG, "onClickChangeBtnColor");
-//
-//        final Handler handler = new Handler();
-//
-//        final Runnable r = new Runnable() {
-//
-//            final long startTime = System.currentTimeMillis();
-//
-//            public void run() {
-//
-//                if (System.currentTimeMillis() - startTime < 1000) {
-//                    Log.d(TAG, "Handler is running");
-//
-//                    btn.setBackgroundColor(Color.parseColor(onClickColorChange));
-//                    handler.postDelayed(this, 0);
-//                } else {
-//                    Log.d(TAG, "Handler is dead");
-//                    btn.setBackgroundColor(Color.parseColor(onClickOGColor));
-//                    handler.removeCallbacks(this);
-//                }
-//            }
-//        };
-//
-//        handler.postDelayed(r, 1000);
-//
-//    }
+    /**
+     * Creates and returns a notification object
+     *
+     * @param msg the msg string is the ContentText associated with the Notification
+     * @param title the title string is the ContentTitle associated with the Notification
+     * @return Notification the notification object
+     *
+     * */
+    public Notification createNotification(String msg, String title) {
 
+        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+        Resources r = getResources();
+        Notification notification = new android.support.v4.app.NotificationCompat.Builder(this)
+                .setTicker(("Talaria"))
+                .setSmallIcon(R.drawable.talaria_logo_96)
+                .setContentTitle(title)
+                .setContentText(msg)
+                .setContentIntent(pi)
+                .setAutoCancel(false)
+                .build();
+        return notification;
+
+    }
 
     /**
      * PUT IN UTIL FUNCTIONS CLASS?
@@ -350,6 +361,12 @@ public class MainActivity extends AppCompatActivity {
         isTimerRunning = timerRunning;
     }
 
+    public static int getElapsedTime() {
+        return elapsedTime;
+    }
 
+    public static void setElapsedTime(int elapsedTime) {
+        MainActivity.elapsedTime = elapsedTime;
+    }
 
 }

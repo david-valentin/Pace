@@ -39,19 +39,19 @@
     </style>
 
     <style name="CurrentDataText">
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">35sp</item>
         <item name="android:color">#000000</item>
         <item name="android:textStyle">bold</item>
 
     </style>
 
     <style name="CurrentDataHeaderText">
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">35sp</item>
         <item name="android:color">#000000</item>
     </style>
 
     <style name="HeaderText">
-        <item name="android:textSize">25sp</item>
+        <item name="android:textSize">40sp</item>
         <item name="android:textColor">#ffffff</item>
         <item name="android:textAlignment">center</item>
     </style>

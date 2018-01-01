@@ -49,20 +49,22 @@ public class RunningTrackerService extends Service {
 
 
     /**
-     *
+     * Creates the activity and creates the runner thread which
+     *  starts automatically
      * */
     @Override
     public void onCreate() {
         // TODO Auto-generated method stub
         Log.d(TAG, "onCreate");
         
-        mRunnerThread = new RunnerThread();
-        
         super.onCreate();
+        mRunnerThread = new RunnerThread();
     }
 
     /**
-     *
+     *  Turns the thread from continuing to run
+     *  Makes the thread null
+     *  and destroys the service.
      * */
     @Override
     public void onDestroy() {
@@ -88,25 +90,12 @@ public class RunningTrackerService extends Service {
     public boolean onUnbind(Intent arg0) {
         Log.d(TAG, "unBind");
 
-        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
-        Resources r = getResources();
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setTicker(("message"))
-                .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                .setContentTitle("title")
-                .setContentText("text")
-                .setContentIntent(pi)
-                .setAutoCancel(false)
-                .build();
-        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(Integer.parseInt(CHANNEL_ID), notification);
         return super.onUnbind(arg0);
     }
 
     /**
-     *  Plays the current song
-     *      1. Must keep playing the song => Where the service comes into play
-     *      2. Continues playing the song till the song is over
+     *  Begins the thread, which begins that the runner is running
+     *
      * */
     public void run() {
         mRunnerThread.running = true;
@@ -114,9 +103,9 @@ public class RunningTrackerService extends Service {
     }
 
     /**
-     *  Pauses the current song
-     *      1. Pauses the mRunnerThread bar => grabs the int value for the mRunnerThread bar and set it to that
-     *      2. Keep track of the place where the song was stopped
+     *  Saves the current time and current distance traveled to the database
+     *      1. Pauses the mRunnerThread
+     *      2. Updates the database
      * */
     public void save() {
         mRunnerThread.running = false;
@@ -125,7 +114,7 @@ public class RunningTrackerService extends Service {
 
 
     /**
-     *  Stops the current song
+     *  Stops
      *      1. Resets the mRunnerThread bar
      * */
     public void stop() {
@@ -134,7 +123,9 @@ public class RunningTrackerService extends Service {
     }
 
     /*
-    *   Running the service
+    *   Checks if the service is Running
+    *
+    *   @return boolean a boolean value whether the service is running
     *
     * */
     public boolean isRunning(){
@@ -154,7 +145,7 @@ public class RunningTrackerService extends Service {
         public boolean threadRunning = true;
 
         // Keeps track of the distance
-        public long currentDistance = 0;
+        public long currentDistanceTravelled = 0;
 
         public int time = 0;
 
@@ -163,12 +154,14 @@ public class RunningTrackerService extends Service {
             // Starts the thread
             this.start();
             locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-
             // Access it regardless
 //            runner.setStartLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
 
         }
 
+        /**
+         *  run executes and performs the thread
+         * */
         public void run()
         {
             while(this.threadRunning)
@@ -176,39 +169,32 @@ public class RunningTrackerService extends Service {
                 try {Thread.sleep(1000);} catch(Exception e) {Log.d(TAG, "Error Message: " + e.toString());}
                 if(threadRunning) {
                     Log.d(TAG, "Thread is running");
+                    currentDistanceTravelled += 1;
                     // Get the current distance ran here => log the long variable and use the api to track the
                     // Do the math here
-                    MyLocationListener locationListener = new MyLocationListener();
-
-                    try {
-                        // Requesting the location update
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                                5, // minimum time interval between updates
-                                5, // minimum distance between updates, in metres
-                                locationListener);
-                        // Set the
-                        runner.setIntermediaryLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-                        // calculate the current distance and use this to update the textview
-                        currentDistance = (long) runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
-                        time = runner.getProgress();
-
-                    } catch(SecurityException e) {
-                        Log.d(TAG, e.toString());
-                    }
+//                    MyLocationListener locationListener = new MyLocationListener();
 
                 }
                 // Update the time and call the method doCallbacks => will get the broadcast item
-                doCallbacks(currentDistance);
+                doCallbacks(currentDistanceTravelled);
             }
         }
 
-        public void doCallbacks(long currentDistance)
+        /**
+         *  Performs the callback by braodcasting to the activity the new currentDistanceTravelled
+         *
+         *  @param currentDistanceTravelled  is the current distance travelled
+         *
+         * */
+        public void doCallbacks(long currentDistanceTravelled)
         {
+            Log.d(TAG, "doCallbacks");
             // Potentially do the math here?
             final int n = remoteCallbackList.beginBroadcast();
             for (int i=0; i<n; i++)
             {
-                remoteCallbackList.getBroadcastItem(i).callback.distanceRan(currentDistance);
+//                Log.d(TAG, "Current Distance is: " + currentDistanceTravelled);
+                remoteCallbackList.getBroadcastItem(i).callback.distanceRan(currentDistanceTravelled);
             }
             remoteCallbackList.finishBroadcast();
         }
@@ -218,8 +204,6 @@ public class RunningTrackerService extends Service {
         *   GETTERS AND SETTERS:
         *
         * */
-
-
 
         public boolean isThreadRunning() {
             return threadRunning;
@@ -238,23 +222,33 @@ public class RunningTrackerService extends Service {
         }
 
         public long getCurrentDistance() {
-            return currentDistance;
+            return currentDistanceTravelled;
         }
 
-        public void setCurrentDistance(long currentDistance) {
-            this.currentDistance = currentDistance;
+        public void setCurrentDistance(long currentDistanceTravelled) {
+            this.currentDistanceTravelled = currentDistanceTravelled;
         }
 
     }
 
 
     /**
-     *  Binder Class that interacts with the Thread
+     *  Binder Class that interacts with the Activity and part of the service class
      *
      * */
     public class RunningServiceBinder extends Binder implements IInterface {
 
         private CallbackInterface callback;
+
+        public void run(){
+            RunningTrackerService.this.run();
+        }
+        public void save(){
+            RunningTrackerService.this.save();
+        }
+        public void stop(){
+            RunningTrackerService.this.stop();
+        }
 
         public void registerCallback(CallbackInterface callback) {
             this.callback = callback;
@@ -264,9 +258,13 @@ public class RunningTrackerService extends Service {
             remoteCallbackList.unregister(RunningServiceBinder.this);
         }
 
+        public boolean isRunning(){
+            return RunningTrackerService.this.isRunning();
+        };
+
         @Override
         public IBinder asBinder() {
-            return null;
+            return this;
         }
     }
 }

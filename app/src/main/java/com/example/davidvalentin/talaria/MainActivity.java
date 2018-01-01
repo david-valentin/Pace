@@ -35,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
     private static int elapsedTime = 0;
 
     // Service Components
-    private RunningTrackerService.RunningServiceBinder RunningServiceBinder = null;
-    private RunningTrackerService RunningService = null;
+    private RunningTrackerService.RunningServiceBinder mRunningServiceBinder = null;
 
     // Logical Member Variables
     private boolean isTimerRunning = false;
@@ -74,11 +73,11 @@ public class MainActivity extends AppCompatActivity {
      * */
     @Override
     public void onDestroy() {
+        Log.d(TAG, "onDestroy");
         if(serviceConnection!=null) {
             unbindService(serviceConnection);
             serviceConnection = null;
         }
-        Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 
@@ -122,6 +121,15 @@ public class MainActivity extends AppCompatActivity {
         startBtn = findViewById(R.id.startBtn);
         onClickChangeBtnColor(startBtn);
         startTimer();
+        
+//        if (mRunningServiceBinder != null) {
+//            mRunningServiceBinder.run();
+//        } else {
+//            Log.d(TAG, "Its still null");
+//        }
+        // Start the timer and start the service
+//        Log.d(TAG, "YES? " + mRunningServiceBinder.isRunning());
+
     }
 
     /**
@@ -193,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     /**
-     *  Stops and kills ther service and sends a query to save the current time and distance ran to the database
+     *  Stops and kills the service and sends a query to save the current time and distance ran to the database
      *
      *  @param view This is the view context of the current button
      * */
@@ -209,10 +217,11 @@ public class MainActivity extends AppCompatActivity {
      *  @param view This is the view context of the current button
      * */
     public void onClickStopTimer(View view) {
+        Log.d(TAG, "onClickStopTimer");
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
         stopTimer();
-        Log.d(TAG, "onClickStopTimer");
+        // Stopping the service
     }
 
     /*
@@ -226,10 +235,11 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // Updates
+                    Log.d(TAG, "callback Running");
                     // Updates the text of the timer
                     distanceText = (TextView) findViewById(R.id.timerText);
-                    distanceText.setText((int) currentDistance);
+//                    Log.d(TAG, "Current Distance " + currentDistance);
+//                    distanceText.setText((int) currentDistance);
                 }
             });
         }
@@ -245,16 +255,16 @@ public class MainActivity extends AppCompatActivity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             // Once the service is connected to the UI of the main activity
             Log.d(TAG, "onServiceConnected");
-            RunningServiceBinder = (RunningTrackerService.RunningServiceBinder) service;
-            RunningServiceBinder.registerCallback(callback);
+            mRunningServiceBinder = (RunningTrackerService.RunningServiceBinder) service;
+            mRunningServiceBinder.registerCallback(callback);
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "onServiceDisconnected");
             // Decouple the service and unregister the callback from it
-            RunningServiceBinder.unregisterCallback(callback);
-            RunningServiceBinder = null;
+            mRunningServiceBinder.unregisterCallback(callback);
+            mRunningServiceBinder = null;
         }
     };
 

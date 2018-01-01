@@ -120,8 +120,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickStartTimer");
         startBtn = findViewById(R.id.startBtn);
         onClickChangeBtnColor(startBtn);
+        startBtn.setEnabled(false); // Had to disable the button because I continued to spawn new timer objects
         startTimer();
-        
+
 //        if (mRunningServiceBinder != null) {
 //            mRunningServiceBinder.run();
 //        } else {
@@ -164,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "Timer is running.");
                         elapsedTime += 1; //increase every sec
                         mHandler.obtainMessage(1).sendToTarget();
-                        startBtn.setEnabled(false); // Had to disable the button because I continued to spawn new timer objects
                     } else {
                         Log.d(TAG, "Timer is cancelled.");
                         timer.cancel();

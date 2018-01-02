@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
 import android.os.IBinder;
@@ -40,7 +41,7 @@ public class RunningTrackerService extends Service {
     // Callback for the thread
     RemoteCallbackList<RunningServiceBinder> remoteCallbackList = new RemoteCallbackList<RunningServiceBinder>();
 
-    // To resume the running activity
+    // Member Variables to resume the service
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mNotification;
 
@@ -50,7 +51,8 @@ public class RunningTrackerService extends Service {
     // Runner class - instantiate it with the Service Context
     public Runner runner = new Runner(this);
 
-    private LocationManager locationManager;
+    protected LocationManager mLocationManager;
+    protected LocationListener mLocationListener;
 
 
     /**
@@ -113,6 +115,9 @@ public class RunningTrackerService extends Service {
         return super.onUnbind(arg0);
     }
 
+    /**
+     *  When the service rebinds with the activity
+     * */
     @Override
     public void onRebind(Intent intent) {
         Log.d(TAG, "onRebind");
@@ -188,14 +193,15 @@ public class RunningTrackerService extends Service {
     }
 
 
-
     /**
      *  Thread Class that keeps track of the location of the user
      *
      * */
     public class RunnerThread extends Thread implements Runnable {
 
+        // Internal TAG String
         private static final String TAG = "RunnerThread";
+
         // Bool object to check if we are running or not
         public boolean running = false;
 
@@ -205,18 +211,29 @@ public class RunningTrackerService extends Service {
         // Keeps track of the distance
         public float currentDistanceTravelled = 0;
 
-        public int time = 0;
+        // The string representation of the currentDistanceTravelled
+        public String currentDistanceTravelledString;
+
 
 
         public RunnerThread() {
             // Starts the thread
             Log.d(TAG, "runnerThread created");
             this.start();
-            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+            // Instantiate and set up the RunnerThreads variables
+            mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+            mLocationListener = new MyLocationListener();
+
             // Access it regardless
             try {
                 // Set the start location as the initial location
-                runner.setStartLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                runner.setStartLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                        5, // minimum time interval between updates
+                        5, // minimum distance between updates, in metres
+                        mLocationListener);
+                Log.d(TAG, "Start Location is: " + runner.getStartLocation());
             } catch (SecurityException e) {
                 Log.d(TAG, e.toString());
             }
@@ -228,44 +245,40 @@ public class RunningTrackerService extends Service {
          *  Executes the thread and checks the current distance of the and continually
          *  calculates the current distance and returns that distance through the callback.
          * */
-        public void run()
-        {
-            Looper.prepare();
-            while(this.threadRunning)
-            {
-                try {Thread.sleep(1000);} catch(Exception e) {Log.d(TAG, "Error Message: " + e.toString());}
-                if(threadRunning) {
-                    Log.d(TAG, "Thread is running");
-
-                    locationManager =
-                            (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-
-                    MyLocationListener locationListener = new MyLocationListener();
-                    try {
-                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
-                                5, // minimum time interval between updates
-                                5, // minimum distance between updates, in metres
-                                locationListener);
-                        Location newLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                        currentDistanceTravelled = runner.getStartLocation().distanceTo(newLocation);
-                        Log.d(TAG, "Current Distance Traveled: " + currentDistanceTravelled);
-                    } catch(SecurityException e) {
-                        Log.d(TAG, e.toString());
-                    }
-                    // Get the current distance ran here => log the long variable and use the api to track the
-                    // Do the math here
+        public void run() {
+//            Looper.prepare();
+            while (this.threadRunning) {
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {
+                    Log.d(TAG, "Error Message: " + e.toString());
                 }
-                Looper.loop();
+                if (threadRunning) {
 
-                // Update the time and call the method doCallbacks => will get the broadcast item
-                doCallbacks(currentDistanceTravelled);
+                    try {
+                        // Set the intermediary location as this
+                        runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                        currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
 
+                        currentDistanceTravelledString = Float.toString(currentDistanceTravelled);
+
+                        Log.d(TAG, "Current Distance Travelled: " + currentDistanceTravelled);
+
+                    } catch (SecurityException e) {
+                        Log.d(TAG, "Error: " + e.toString());
+
+                        // Get the current distance ran here => log the long variable and use the api to track the
+                    }
+                    // Update the time and call the method doCallbacks => will get the broadcast item
+                    doCallbacks(currentDistanceTravelled);
+
+                }
             }
         }
 
         /*
         *
-        *   GETTERS AND SETTERS:
+        *   GETTERS AND SETTERS FOR RunnerThread
         *
         * */
 
@@ -332,6 +345,12 @@ public class RunningTrackerService extends Service {
         public void unregisterCallback(CallbackInterface callback) {
             remoteCallbackList.unregister(RunningServiceBinder.this);
         }
+
+        /**
+         *
+         *  GETTERS AND SETTERS FOR RunningServiceBinder
+         *
+         * */
 
         public boolean isRunning(){
             return RunningTrackerService.this.isRunning();

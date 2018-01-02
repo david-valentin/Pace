@@ -29,14 +29,16 @@ public class Runner {
 
     private static final String TAG = "Runner";
 
-    // Member Variables:
-    protected Location startLocation;
-    protected Location endLocation = null;
-    protected Location intermediaryLocation;
+    // Protected Member Variables:
     protected int time;
     protected String timerString;
-
     protected RunnerState state;
+
+    //Location Variables:
+    protected Location startLocation;
+    protected Location endLocation;
+    protected Location intermediaryLocation;
+
 
     // Private Member Variables
     private Context context;
@@ -73,29 +75,47 @@ public class Runner {
         return 0;
     }
 
+    /**
+     *  Initiates that the runner is running and not in a stopped state
+     * */
     public void run() {
         if(this.state == RunnerState.STOPPED) {
             this.state = RunnerState.RUNNING;
         }
     }
 
+    /**
+     *
+     * Initiates that the runner has:
+     *  1. Stopped Running
+     *  2. Would like to record the time and distance travelled
+     * */
     public void save() {
         if(this.state == RunnerState.RUNNING) {
             state = RunnerState.SAVED;
         }
     }
 
+    /**
+     *  Initiates that the Runner has stopped running:
+     *
+     * */
+//    public void pause() {
+//        if(this.state == RunnerState.RUNNING) {
+//            state = RunnerState.SAVED;
+//        }
+//    }
+
+    /**
+     *  Initiates that the Runner has stopped running
+     *
+     * */
     public void stop() {
         if(this !=null) {
             state = RunnerState.STOPPED;
         }
     }
 
-    private void updateTextView() {
-        noteTS = Calendar.getInstance().getTime();
-        String time = "hh:mm"; // 12:00
-        timerString = DateFormat.format(time, noteTS).toString();
-    }
 
     /*
     *   GETTERS AND SETTERS

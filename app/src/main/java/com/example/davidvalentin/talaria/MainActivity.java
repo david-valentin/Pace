@@ -137,15 +137,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  Creates the handler object which handleMessage updates the textview of the timerText
+     *  Creates the handler object which updates the textview of the timerText
      *
      * */
-    public Handler mHandler = new Handler() {
+    public Handler mTimerHandler = new Handler() {
         public void handleMessage(Message msg) {
             timerText = (TextView) findViewById(R.id.timerText);
             timerText.setText(timeFormat(elapsedTime)); //this is the textview
         }
     };
+
+//    public Handler mDistanceHandler = new Handler() {
+//        public void handleMessage(Message msg) {
+//            distanceText = (TextView) findViewById(R.id.distanceText);
+//            distanceText.setText(timeFormat(elapsedTime)); //this is the textview
+//        }
+//    };
 
     /**
      *  startTimer creates a new Timer object
@@ -167,7 +174,7 @@ public class MainActivity extends AppCompatActivity {
                     if (isTimerRunning()) {
                         Log.d(TAG, "Timer is running.");
                         elapsedTime += 1; //increase every sec
-                        mHandler.obtainMessage(1).sendToTarget();
+                        mTimerHandler.obtainMessage(1).sendToTarget();
                     } else {
                         Log.d(TAG, "Timer is cancelled.");
                         timer.cancel();
@@ -224,13 +231,16 @@ public class MainActivity extends AppCompatActivity {
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
         stopTimer();
-        // Stop the service from continue tracking
-        mRunningServiceBinder.stop();
+
 
         // Creating a notification to continue running
         NotificationCompat.Builder mNotification = createNotification("Continue Running", "Talaria", "To Resume Running");
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.notify(CHANNEL_ID, mNotification.build());
+
+        // Stop the service from continue tracking
+        mRunningServiceBinder.stop();
+        Log.d(TAG, "Service Binder still running? " + mRunningServiceBinder.isRunning());
     }
 
     /**
@@ -272,9 +282,9 @@ public class MainActivity extends AppCompatActivity {
                     int pass = (int) currentDistance;
                     String value = Integer.toString(pass);
                     // Updates the text of the timer
-                    distanceText = (TextView) findViewById(R.id.timerText);
+                    distanceText = findViewById(R.id.distanceText);
                     Log.d(TAG, "Current Distance: " + currentDistance);
-                    distanceText.setText(distanceText.toString());
+                    distanceText.setText(String.valueOf(currentDistance));
                 }
             });
         }

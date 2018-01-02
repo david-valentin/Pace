@@ -12,27 +12,26 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.w3c.dom.Text;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Static member variables
     private static final String TAG = "MainActivity";
     private static final String onClickColorChange = "#1D78C6";
     private static final String onClickOGColor = "#2294F7";
     private static final int CHANNEL_ID = 1;
-    private static int elapsedTime = 0;
 
     // Service Components
     private RunningTrackerService.RunningServiceBinder mRunningServiceBinder = null;
@@ -40,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     // Logical Member Variables
     private boolean isTimerRunning = false;
     private Timer timer;
-
+    private int elapsedTime = 0;
 
     // UI/XML  Components:
     private ImageButton stopBtn = null;
@@ -62,9 +61,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        this.startService(new Intent(this, RunningTrackerService.class));
-        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
 
@@ -74,9 +70,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        if(serviceConnection!=null) {
-            unbindService(serviceConnection);
-            serviceConnection = null;
+//        if(serviceConnection!=null) {
+//            unbindService(serviceConnection);
+//            serviceConnection = null;
+//        }
+        if(!mRunningServiceBinder.isRunning()){
+            this.stopService(new Intent(this, RunningTrackerService.class));
         }
         super.onDestroy();
     }
@@ -89,9 +88,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
-        Notification mNotification = createNotification("Still Running", "Talaria");
+        NotificationCompat.Builder mNotification = createNotification("Still Running", "Talaria", "Check Distance");
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(CHANNEL_ID, mNotification);
+        notificationManager.notify(CHANNEL_ID, mNotification.build());
         super.onPause();
     }
 
@@ -123,11 +122,15 @@ public class MainActivity extends AppCompatActivity {
         startBtn.setEnabled(false); // Had to disable the button because I continued to spawn new timer objects
         startTimer();
 
-//        if (mRunningServiceBinder != null) {
-//            mRunningServiceBinder.run();
-//        } else {
-//            Log.d(TAG, "Its still null");
-//        }
+        if (mRunningServiceBinder == null) {
+            Log.d(TAG, "Creating the service");
+            this.startService(new Intent(this, RunningTrackerService.class));
+            this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+        } else {
+            Log.d(TAG, "mRunningServiceBinder is not null");
+
+        }
+
         // Start the timer and start the service
 //        Log.d(TAG, "YES? " + mRunningServiceBinder.isRunning());
 
@@ -221,29 +224,14 @@ public class MainActivity extends AppCompatActivity {
         stopBtn = findViewById(R.id.stopBtn);
         onClickChangeBtnColor(stopBtn);
         stopTimer();
-        // Stopping the service
-    }
+        // Stop the service from continue tracking
+        mRunningServiceBinder.stop();
 
-    /*
-    *   Helped from other class mate - uses the timeFormat to format the song in minutes properly
-    *   and grabs the maxDuration
-    *   Src: https://stackoverflow.com/questions/25796237/how-to-display-song-duration
-    * */
-    CallbackInterface callback = new CallbackInterface() {
-        @Override
-        public void distanceRan(final long currentDistance) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "callback Running");
-                    // Updates the text of the timer
-                    distanceText = (TextView) findViewById(R.id.timerText);
-//                    Log.d(TAG, "Current Distance " + currentDistance);
-//                    distanceText.setText((int) currentDistance);
-                }
-            });
-        }
-    };
+        // Creating a notification to continue running
+        NotificationCompat.Builder mNotification = createNotification("Continue Running", "Talaria", "To Resume Running");
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(CHANNEL_ID, mNotification.build());
+    }
 
     /**
      *  Private member variable that initializes the Service connection object
@@ -269,11 +257,34 @@ public class MainActivity extends AppCompatActivity {
     };
 
 
+    /*
+    *   Helped from other class mate - uses the timeFormat to format the song in minutes properly
+    *   and grabs the maxDuration
+    *   Src: https://stackoverflow.com/questions/25796237/how-to-display-song-duration
+    * */
+    CallbackInterface callback = new CallbackInterface() {
+        @Override
+        public void distanceRan(final float currentDistance) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "callback Running");
+                    int pass = (int) currentDistance;
+                    String value = Integer.toString(pass);
+                    // Updates the text of the timer
+                    distanceText = (TextView) findViewById(R.id.timerText);
+                    Log.d(TAG, "Current Distance: " + currentDistance);
+                    distanceText.setText(distanceText.toString());
+                }
+            });
+        }
+    };
+
+
     /**
-     *  PUT IN UTIL FUNCTIONS CLASS?
+     *  timeFormat takes
      *
-     *  Help from Justin Li
-     *  Src: https://stackoverflow.com/questions/27954303/how-to-format-a-songs-duration-time-into-minutes-and-seconds
+     * @param seconds
      *
      * */
     private String timeFormat(int seconds) {
@@ -321,20 +332,18 @@ public class MainActivity extends AppCompatActivity {
      * @return Notification the notification object
      *
      * */
-    public Notification createNotification(String msg, String title) {
+    public NotificationCompat.Builder createNotification(String msg, String title, String contentText) {
 
         PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         Resources r = getResources();
-        Notification notification = new android.support.v4.app.NotificationCompat.Builder(this)
-                .setTicker(("Talaria"))
-                .setSmallIcon(R.drawable.talaria_logo_96)
-                .setContentTitle(title)
-                .setContentText(msg)
-                .setContentIntent(pi)
-                .setAutoCancel(false)
-                .build();
-        return notification;
+        NotificationCompat.Builder notification =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.talaria_logo_96)
+                        .setColorized(true)
+                        .setContentTitle("Talaria")
+                        .setContentText(contentText);
 
+        return notification;
     }
 
     /**
@@ -376,12 +385,12 @@ public class MainActivity extends AppCompatActivity {
         isTimerRunning = timerRunning;
     }
 
-    public static int getElapsedTime() {
+    public int getElapsedTime() {
         return elapsedTime;
     }
 
-    public static void setElapsedTime(int elapsedTime) {
-        MainActivity.elapsedTime = elapsedTime;
+    public void setElapsedTime(int newElapsedTime) {
+        this.elapsedTime = newElapsedTime;
     }
 
 }

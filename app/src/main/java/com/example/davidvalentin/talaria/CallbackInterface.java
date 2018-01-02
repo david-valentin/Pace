@@ -7,6 +7,6 @@ package com.example.davidvalentin.talaria;
 public interface CallbackInterface {
 
     // Reports the progress of the run back to the main thread...I think
-    public void distanceRan(long currentDistance);
+    public void distanceRan(float currentDistance);
 
 }

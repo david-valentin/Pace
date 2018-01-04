@@ -62,6 +62,7 @@ public class Runner {
      *
      */
     public Runner(Context context) {
+        Log.d(TAG, "Runner");
 
         this.state = RunnerState.STOPPED;
 
@@ -71,6 +72,7 @@ public class Runner {
     }
 
     public int getProgress() {
+        Log.d(TAG, "getProgress");
         if(this!=null) {
             if(this.state == RunnerState.STOPPED || this.state == RunnerState.RUNNING)
                 return 0;
@@ -82,6 +84,7 @@ public class Runner {
      *  Initiates that the runner is running and not in a stopped state
      * */
     public void run() {
+        Log.d(TAG, "run");
         if(this.state == RunnerState.STOPPED) {
             this.state = RunnerState.RUNNING;
         }
@@ -94,6 +97,7 @@ public class Runner {
      *  2. Would like to record the time and distance travelled
      * */
     public void save() {
+        Log.d(TAG, "save");
         if(this.state == RunnerState.RUNNING) {
             state = RunnerState.SAVED;
         }
@@ -114,6 +118,7 @@ public class Runner {
      *
      * */
     public void stop() {
+        Log.d(TAG, "stop");
         if(this !=null) {
             state = RunnerState.STOPPED;
         }
@@ -150,14 +155,6 @@ public class Runner {
 
     public void setIntermediaryLocation(Location intermediaryLocation) {
         this.intermediaryLocation = intermediaryLocation;
-    }
-
-    public int getTime() {
-        return time;
-    }
-
-    public void setTime(int time) {
-        this.time = time;
     }
 
     public Float getTotalDistanceRan() {

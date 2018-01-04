@@ -309,15 +309,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  Creates the handler object which updates the textview of the timerText
+     *  The handler class which updates the textview of the timerText
      *
      * */
-
     private static class TimerHandler extends Handler {
 
         private static final String TAG = "TimerHandler";
-
-        private final WeakReference<MainActivity> mainActivity;
+        private final WeakReference<MainActivity> mainActivity; // A weak reference to the main activity is declared so that it can be properly garbage collected
 
         public TimerHandler(MainActivity activity) {
             Log.d(TAG, "onCreate");
@@ -327,10 +325,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void handleMessage(Message msg) {
             Log.d(TAG, "handleMessage");
-            MainActivity mainActivity = new MainActivity();
+            MainActivity activity = mainActivity.get();
             try {
-                mainActivity.timerText = (TextView) mainActivity.findViewById(R.id.timerText);
-                mainActivity.timerText.setText(mainActivity.timeFormat(mainActivity.getElapsedTime())); //this is the textview
+                activity.timerText = (TextView) activity.findViewById(R.id.timerText);
+                activity.timerText.setText(activity.timeFormat(activity.getElapsedTime())); //this is the textview
             } catch (Exception e) {
                 Log.d(TAG, e.toString());
             }
@@ -381,13 +379,14 @@ public class MainActivity extends AppCompatActivity {
         if (!isTimerRunning()) {
             Log.d(TAG, "Killed Timer");
             setTimerRunning(false);
+            timer.purge();
+            timer.cancel();
+            setElapsedTime(0);
             mTimerHandler.removeCallbacks(null);
             mTimerHandler.removeCallbacksAndMessages(null);
-
             // Reset the Text Views
             distanceText = findViewById(R.id.distanceText);
             distanceText.setText(DEFAULT_DISTANCE_TEXT);
-
             timerText = findViewById(R.id.timerText);
             timerText.setText(DEFAULT_TIME_TEXT);
         } else {
@@ -487,6 +486,10 @@ public class MainActivity extends AppCompatActivity {
 
     public int getElapsedTime() {
         return elapsedTime;
+    }
+
+    public void setElapsedTime(int elapsedTime) {
+        this.elapsedTime = elapsedTime;
     }
 
     public Boolean getPlayOrPause() {

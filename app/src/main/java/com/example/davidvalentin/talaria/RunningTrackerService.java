@@ -136,7 +136,8 @@ public class RunningTrackerService extends Service {
      *
      * */
     public void run() {
-        mRunnerThread.running = true;
+        Log.d(TAG, "run");
+        mRunnerThread.setThreadRunning(true);
         runner.run();
     }
 
@@ -146,7 +147,8 @@ public class RunningTrackerService extends Service {
      *      2. Updates the database
      * */
     public void save() {
-        mRunnerThread.running = false;
+        Log.d(TAG, "save");
+        mRunnerThread.setThreadRunning(false);
         runner.stop();
     }
 
@@ -156,7 +158,8 @@ public class RunningTrackerService extends Service {
      *      1. Resets the mRunnerThread
      * */
     public void stop() {
-        mRunnerThread.running = false;
+        Log.d(TAG, "stop");
+        mRunnerThread.setThreadRunning(false);
         runner.stop();
     }
 
@@ -167,6 +170,7 @@ public class RunningTrackerService extends Service {
     *
     * */
     public boolean isServiceRunning(){
+        Log.d(TAG, "isServiceRunning");
         return RunningTrackerService.this.isServiceRunning();
     };
 
@@ -321,20 +325,21 @@ public class RunningTrackerService extends Service {
 
         private CallbackInterface callback;
 
-        public void run(){
+        void run(){
             RunningTrackerService.this.run();
         }
-        public void save(){
+
+        void save(){
             RunningTrackerService.this.save();
         }
-        public void stop(){
+
+        void stop(){
             RunningTrackerService.this.stop();
         }
 
         public IBinder asBinder() {
             return this;
         }
-
 
         public void registerCallback(CallbackInterface callback) {
             this.callback = callback;

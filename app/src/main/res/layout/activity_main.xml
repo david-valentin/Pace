@@ -94,18 +94,18 @@
                     android:layout_weight="1"
                     android:background="?attr/colorPrimary"
                     android:clickable="true"
-                    android:onClick="onClickStartTimer"
-                    android:src="@drawable/start_time_96" />
+                    android:onClick="onClickPlayOrPauseHandler"
+                    android:src="@drawable/play_btn_96" />
 
                 <ImageButton
-                    android:id="@+id/stopBtn"
+                    android:id="@+id/restartBtn"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:background="?attr/colorPrimary"
                     android:clickable="true"
-                    android:onClick="onClickStopTimer"
-                    android:src="@drawable/stop_time_96" />
+                    android:onClick="onClickRestart"
+                    android:src="@drawable/restart_btn_96" />
 
 
             </LinearLayout>

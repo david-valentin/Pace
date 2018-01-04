@@ -39,6 +39,9 @@ public class Runner {
     protected Location endLocation;
     protected Location intermediaryLocation;
 
+    // Gets incremented
+    protected Float totalDistanceRan = new Float(0);
+
 
     // Private Member Variables
     private Context context;
@@ -96,10 +99,10 @@ public class Runner {
         }
     }
 
-    /**
-     *  Initiates that the Runner has stopped running:
-     *
-     * */
+//    /**
+//     *  Initiates that the Runner has stopped running:
+//     *
+//     * */
 //    public void pause() {
 //        if(this.state == RunnerState.RUNNING) {
 //            state = RunnerState.SAVED;
@@ -115,7 +118,6 @@ public class Runner {
             state = RunnerState.STOPPED;
         }
     }
-
 
     /*
     *   GETTERS AND SETTERS
@@ -156,6 +158,10 @@ public class Runner {
 
     public void setTime(int time) {
         this.time = time;
+    }
+
+    public Float getTotalDistanceRan() {
+        return totalDistanceRan;
     }
 
 }

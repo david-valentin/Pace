@@ -27,16 +27,20 @@ import java.util.Optional;
 
 
 /**
+ *
+ * RunningTrackerService is a remote service that tracks the gps coordinates
+ * of the user and runs a thread and uses a callback to communicate
+ * the location of the user to binded activity
+ *
  * Created by davidvalentin on 12/26/17.
+ *
  */
-
 public class RunningTrackerService extends Service {
 
     // Member variables
     private static final String TAG = "RunningTrackerService";
     private static final int CHANNEL_ID = 0;
     private static final MainActivity mainActivity = new MainActivity();
-
 
     // Callback for the thread
     RemoteCallbackList<RunningServiceBinder> remoteCallbackList = new RemoteCallbackList<RunningServiceBinder>();
@@ -49,7 +53,7 @@ public class RunningTrackerService extends Service {
     private RunnerThread mRunnerThread;
 
     // Runner class - instantiate it with the Service Context
-    public Runner runner = new Runner(this);
+    public Runner runner;
 
     protected LocationManager mLocationManager;
     protected LocationListener mLocationListener;
@@ -64,6 +68,11 @@ public class RunningTrackerService extends Service {
         // TODO Auto-generated method stub
         Log.d(TAG, "onCreate");
         super.onCreate();
+
+        // Instantiate the new runner object
+        runner = new Runner(this);
+
+
 
         // Created the notification
 //        PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
@@ -87,13 +96,11 @@ public class RunningTrackerService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        mRunnerThread.threadRunning = false;
+        mRunnerThread.setThreadRunning(false);
         mRunnerThread = null;
-
         // Cancel the notification
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(CHANNEL_ID);
-
         super.onDestroy();
     }
 
@@ -154,13 +161,13 @@ public class RunningTrackerService extends Service {
     }
 
     /**
-    *   Checks if the service is Running
+    *   Checks if the service is running
     *
     *   @return boolean a boolean value whether the service is running
     *
     * */
-    public boolean isRunning(){
-        return RunningTrackerService.this.isRunning();
+    public boolean isServiceRunning(){
+        return RunningTrackerService.this.isServiceRunning();
     };
 
     /**
@@ -184,7 +191,7 @@ public class RunningTrackerService extends Service {
 
     /**
      *
-     * GETTERS AND SETTERS FOR RunningTrackerService
+     * Getters and Setters for RunningTrackerService
      *
      * */
 
@@ -210,11 +217,6 @@ public class RunningTrackerService extends Service {
 
         // Keeps track of the distance
         public float currentDistanceTravelled = 0;
-
-        // The string representation of the currentDistanceTravelled
-        public String currentDistanceTravelledString;
-
-
 
         public RunnerThread() {
             // Starts the thread
@@ -247,22 +249,24 @@ public class RunningTrackerService extends Service {
          * */
         public void run() {
 //            Looper.prepare();
-            while (this.threadRunning) {
+            while (isThreadRunning()) {
                 try {
                     Thread.sleep(1000);
                 } catch (Exception e) {
                     Log.d(TAG, "Error Message: " + e.toString());
                 }
-                if (threadRunning) {
+                if (isThreadRunning()) {
 
                     try {
                         // Set the intermediary location as this
                         runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
                         currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
 
-                        currentDistanceTravelledString = Float.toString(currentDistanceTravelled);
+                        runner.totalDistanceRan += currentDistanceTravelled;
 
-                        Log.d(TAG, "Current Distance Travelled: " + currentDistanceTravelled);
+                        Log.d(TAG, "Current Distance Travelled: " + Float.toString(currentDistanceTravelled));
+                        Log.d(TAG, "Total Distance Travelled: " + runner.getTotalDistanceRan());
+
 
                     } catch (SecurityException e) {
                         Log.d(TAG, "Error: " + e.toString());
@@ -270,7 +274,7 @@ public class RunningTrackerService extends Service {
                         // Get the current distance ran here => log the long variable and use the api to track the
                     }
                     // Update the time and call the method doCallbacks => will get the broadcast item
-                    doCallbacks(currentDistanceTravelled);
+                    doCallbacks(runner.getTotalDistanceRan());
 
                 }
             }
@@ -278,7 +282,7 @@ public class RunningTrackerService extends Service {
 
         /*
         *
-        *   GETTERS AND SETTERS FOR RunnerThread
+        *   Getters and Setters for RunnerThread
         *
         * */
 
@@ -289,11 +293,7 @@ public class RunningTrackerService extends Service {
         public void setThreadRunning(boolean threadRunning) {
             this.threadRunning = threadRunning;
         }
-
-        public boolean isRunning() {
-            return running;
-        }
-
+        
         public void setRunning(boolean running) {
             this.running = running;
         }
@@ -309,7 +309,6 @@ public class RunningTrackerService extends Service {
         public Runner getRunner() {
             return runner;
         }
-
 
     }
 
@@ -348,12 +347,12 @@ public class RunningTrackerService extends Service {
 
         /**
          *
-         *  GETTERS AND SETTERS FOR RunningServiceBinder
+         *  Getters and Setters for RunningServiceBinder
          *
          * */
 
-        public boolean isRunning(){
-            return RunningTrackerService.this.isRunning();
+        public boolean isServiceRunning(){
+            return RunningTrackerService.this.isServiceRunning();
         };
 
         public Runner getRunner() {

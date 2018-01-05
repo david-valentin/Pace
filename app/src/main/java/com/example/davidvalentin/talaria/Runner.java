@@ -78,9 +78,7 @@ public class Runner {
      */
     public Runner(Context context) {
         Log.d(TAG, "Runner");
-
         this.state = RunnerState.STOPPED;
-
         // So that we can instantiate the start location member class in the runnerClass:
         // https://stackoverflow.com/questions/4870667/how-can-i-use-getsystemservice-in-a-non-activity-class-locationmanager
         this.context = context;
@@ -101,7 +99,7 @@ public class Runner {
      * */
     public void run() {
         Log.d(TAG, "run");
-        if(this.state == RunnerState.PAUSED) {
+        if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
             this.state = RunnerState.RUNNING;
         }
     }

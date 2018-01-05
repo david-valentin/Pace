@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String DEFAULT_DISTANCE_TEXT = "0.00";
 
     // Service Components and Threads
-    private RunningTrackerService.RunningServiceBinder mRunningServiceBinder = null;
+    private RunningTrackerService.RunningServiceBinder mRunningServiceBinder;
     private final TimerHandler mTimerHandler = new TimerHandler(this);
 
     // Member Variables
@@ -44,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private Timer timer; // Timer object that keeps track of time
     private int elapsedTime = 0; // THe amount of time that has passed since playBtn was clicked
     private Boolean playOrPause = false; // Bool that checks whether we are playing or pausing
-    private Float distanceRan = new Float(0);
+    private Float distanceRan;
 
 
     // UI/XML Components:
@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
     /**
      *   Helped from other class mate - uses the timeFormat to format the runningTime in seconds
      *
@@ -103,19 +102,13 @@ public class MainActivity extends AppCompatActivity {
         public void distanceRan(final float currentDistance) {
             runOnUiThread(new Runnable() {
                 @Override
-                public void run() {
-
-                    if (mRunningServiceBinder.isServiceRunning(mRunningServiceBinder.getClass())) {
-                        Log.d(TAG, "callback Running");
-                        setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
-                        // Updates the text of the timer
-                        distanceText = findViewById(R.id.distanceText);
-                        Log.d(TAG, "Current Distance: " + currentDistance);
-                        distanceText.setText(mUtilityLibrary.convertMetersToKilometers(currentDistance));
-                    } else {
-                        Log.d(TAG, "RunnerState: " + mRunningServiceBinder.getRunner().getState());
-                    }
-
+            public void run() {
+                    Log.d(TAG, "callback Running");
+                    setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
+                    // Updates the text of the timer
+                    distanceText = findViewById(R.id.distanceText);
+                    Log.d(TAG, "Current Distance: " + currentDistance);
+                    distanceText.setText(mUtilityLibrary.convertMetersToKilometers(currentDistance));
                 }
             });
         }
@@ -142,6 +135,9 @@ public class MainActivity extends AppCompatActivity {
         restartBtn = findViewById(R.id.restartBtn);
         // Disabled the button
         // restartBtn.setEnabled(false);
+
+        // Set the values to zero
+        distanceRan = new Float(0);
     }
 
 
@@ -151,7 +147,6 @@ public class MainActivity extends AppCompatActivity {
      * */
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
         if(serviceConnection !=null ) {
             unbindService(serviceConnection);
             serviceConnection = null;
@@ -159,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
         if(mRunningServiceBinder.isServiceRunning(mRunningServiceBinder.getClass())){
             this.stopService(new Intent(this, RunningTrackerService.class));
         }
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 
@@ -212,12 +208,27 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickStartTimer");
         onClickChangeBtnColor(startBtn);
         startTimer();
-        bindAndStartService();
-//        if (mRunningServiceBinder == null) {
+        if (mRunningServiceBinder == null) {
+            bindAndStartService();
+        } else if (this.getCallback() == null) {
+            Log.d(TAG, "It is null");
+        }
+//        if (mRunningServiceBinder != null) {
+//            Log.d(TAG, "Starting the Service");
+//            // Pause the service => Service is still running and locations still listening BUT TextViews are not updating
+//            mRunningServiceBinder.run();
+//            Log.d(TAG, "IS BINDER ALIVE: " + mRunningServiceBinder.isBinderAlive());
+//            Log.d(TAG, "CALLBACK IS NULL: " + this.getCallback());
+//
+//        } else if (mRunningServiceBinder == null)  {
+//            Log.d(TAG, "mRunningServiceBinder is null");
+//            if (this.callback == null) {
+//                Log.d(TAG, "callback is null");
+//            }
+//
 //        } else {
 //            Log.d(TAG, "Service connection is not null");
 //        }
-
     }
 
     /**
@@ -230,11 +241,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickPause");
         onClickChangeBtnColor(startBtn);
         stopTimer();
-        if (mRunningServiceBinder != null) {
-            Log.d(TAG, "Pausing Service Binder");
-            // Pause the service => Service is still running and locations still listening BUT TextViews are not updating
-            mRunningServiceBinder.pause();
-        }
+        mRunningServiceBinder.pause();
     }
 
     /**
@@ -255,8 +262,8 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Stopping and Resetting Service Binder");
             // Stop the service binder
             mRunningServiceBinder.restart();
-            mRunningServiceBinder.getRunningTrackerService().setmLocationListener(null);
-            mRunningServiceBinder.getRunningTrackerService().setmLocationManager(null);
+//            mRunningServiceBinder.getRunningTrackerService().setmLocationListener(null);
+//            mRunningServiceBinder.getRunningTrackerService().setmLocationManager(null);
         }
 
     }
@@ -271,24 +278,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickSaveTime");
         saveBtn = findViewById(R.id.saveBtn);
         onClickChangeBtnColor(saveBtn);
-    }
-
-    /**
-     *  When clicked, stops the timer and stops the service from continuing to run
-     *
-     *  @param view This is the view context of the current button
-     *
-     * */
-    public void onClickStopTimer(View view) {
-        Log.d(TAG, "onClickStopTimer");
-        onClickChangeBtnColor(restartBtn);
-        stopTimer();
-        // Stop the service from continue tracking
-        if (mRunningServiceBinder != null) {
-            Log.d(TAG, "Stopping Service Binder");
-            // Stop the service binder
-            mRunningServiceBinder.stop();
-        }
     }
 
     /**
@@ -321,6 +310,16 @@ public class MainActivity extends AppCompatActivity {
         this.startService(new Intent(this, RunningTrackerService.class));
         this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
+    /**
+     *  Binds and starts the service to the main activity
+     * */
+    public void unbindAndStopService() {
+        Log.d(TAG, "bindAndStartService");
+        this.stopService(new Intent(this, RunningTrackerService.class));
+        this.unbindService(serviceConnection);
+    }
+
 
     /**
      *  The handler class which updates the textview of the timerText
@@ -418,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
     * */
     private void stopTimer() {
         Log.d(TAG, "stopTimer");
-
         if (isTimerRunning()) {
             Log.d(TAG, "Timer Stopped");
             setTimerRunning(false);
@@ -490,6 +488,11 @@ public class MainActivity extends AppCompatActivity {
     *   Getters and Setters for MainActivity
     *
     * */
+
+
+    public CallbackInterface getCallback() {
+        return callback;
+    }
 
     public boolean isTimerRunning() {
         return isTimerRunning;

@@ -1,11 +1,13 @@
 package com.example.davidvalentin.talaria;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
@@ -14,6 +16,8 @@ import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+
+import static android.support.v4.app.ActivityCompat.requestPermissions;
 
 
 /**
@@ -65,6 +69,7 @@ public class RunningTrackerService extends Service {
 
         runner = new Runner(this); // Instantiate the new runner object
         mRunnerThread = new RunnerThread(); // Instantiate the runner thread
+        this.run();
     }
 
     /**
@@ -116,7 +121,14 @@ public class RunningTrackerService extends Service {
      * */
     public void run() {
         Log.d(TAG, "run");
-        mRunnerThread.setThreadRunning(true);
+        if (mRunnerThread != null) {
+            Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
+            mRunnerThread.setThreadRunning(true);
+        } else {
+            Log.d(TAG, "RUNNER THREAD IS NULL");
+            mRunnerThread = new RunnerThread();
+            mRunnerThread.setThreadRunning(true);
+        }
         runner.run();
     }
 
@@ -137,7 +149,6 @@ public class RunningTrackerService extends Service {
         mRunnerThread.setThreadRunning(false);
         runner.restart();
     }
-
 
     /**
      *  Stops the thread from running and the runner class is not longer running
@@ -258,6 +269,9 @@ public class RunningTrackerService extends Service {
      * */
     public class RunnerThread extends Thread implements Runnable {
 
+        // Permissions request for locations
+        final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
+
         // Internal TAG String
         private static final String TAG = "RunnerThread";
 
@@ -277,6 +291,10 @@ public class RunningTrackerService extends Service {
             // Instantiate and set up the RunnerThreads variables
             mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
             mLocationListener = new MyLocationListener();
+
+            // Reset the values when first instantiated
+            setCurrentDistance(0);
+            setTotalDistanceRan(0);
 
             // Access it regardless
             try {
@@ -300,33 +318,37 @@ public class RunningTrackerService extends Service {
          *  calculates the current distance and returns that distance through the callback.
          * */
         public void run() {
+            Log.d(TAG, "run");
+            Log.d(TAG, "Is Thread running: " + isThreadRunning());
             while (isThreadRunning()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (Exception e) {
-                    Log.d(TAG, "Error Message: " + e.toString());
-                }
-                if (isThreadRunning()) {
 
+                if (runner.getState() == Runner.RunnerState.RUNNING) {
+                    try {Thread.sleep(1000);} catch (Exception e) {Log.d(TAG, "Error Message: " + e.toString());}
                     try {
-                        // Set the intermediary location as this
+                        // Set the intermediary location as this the last known location
                         runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+
+                        // currentDistanceTravelled is the distance from the getIntermediaryLocation() + and the start
                         currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
 
+                        runner.setStartLocation(runner.getIntermediaryLocation());
+
+                        // Add that distance to the total distance
                         totalDistanceRan += currentDistanceTravelled;
 
                         Log.d(TAG, "Current Distance Travelled: " + Float.toString(currentDistanceTravelled));
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
-
-
                     } catch (SecurityException e) {
                         Log.d(TAG, "Error: " + e.toString());
 
                         // Get the current distance ran here => log the long variable and use the api to track the
                     }
                     // Update the time and call the method doCallbacks => will get the broadcast item
-                    doCallbacks(getTotalDistanceRan());
+                    doCallbacks(totalDistanceRan);
+                } else {
+                    Log.d(TAG, "RUNNER STATE: " + runner.getState());
                 }
+
             }
         }
 

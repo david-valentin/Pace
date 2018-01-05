@@ -94,7 +94,7 @@
                     android:layout_weight="1"
                     android:background="?attr/colorPrimary"
                     android:clickable="true"
-                    android:onClick="onClickPlayOrPauseHandler"
+                    android:onClick="onClickRunOrPauseHandler"
                     android:src="@drawable/play_btn_96" />
 
                 <ImageButton

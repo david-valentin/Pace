@@ -39,20 +39,35 @@ public class Runner {
     protected Location endLocation;
     protected Location intermediaryLocation;
 
-    // Gets incremented
-    protected Float totalDistanceRan = new Float(0);
-
-
     // Private Member Variables
     private Context context;
     private java.util.Date noteTS;
 
-
+    /* STATES EXPLAINED:
+    *   RUNNING => The runner is running:
+    *       1. The service = running
+    *       2. Location listener = running
+    *       3. TextViews = updating
+    *   SAVED => The runner has stopped and finished their run:
+    *       1. The service != running i.e. unbinded/stopped
+    *       2. The location listener != running
+    *       3. TextViews != updating => TextViews set to defaults
+    *   STOPPED => The runner has stopped running (pre req to save):
+    *       1. The service = running i.e. unbinded/stopped
+    *       2. The location listener != running i.e. null
+    *       3. TextViews != updating => TextViews set to defaults
+    *   PAUSED => The runner has paused their running i.e. for some reason
+    *       1. The service = running
+    *       2. Location listener = running
+    *       3. TextViews != updating => TextViews and distance is calculated from the latest point
+    * */
     public enum RunnerState {
         ERROR,
         RUNNING,
         SAVED,
-        STOPPED
+        STOPPED,
+        PAUSED,
+        RESTARTED
     }
 
 
@@ -81,46 +96,60 @@ public class Runner {
     }
 
     /**
-     *  Initiates that the runner is running and not in a stopped state
+     *  Initiates that the runner is running and would like
+     *      1. Record their time and distance travelled
      * */
     public void run() {
         Log.d(TAG, "run");
-        if(this.state == RunnerState.STOPPED) {
+        if(this.state == RunnerState.PAUSED) {
             this.state = RunnerState.RUNNING;
         }
     }
 
     /**
-     *
      * Initiates that the runner has:
-     *  1. Stopped Running
+     *  1. Stopped Running => i.e. in the stopped state
      *  2. Would like to record the time and distance travelled
+     *
      * */
     public void save() {
         Log.d(TAG, "save");
-        if(this.state == RunnerState.RUNNING) {
+        if(this.state != RunnerState.RUNNING) {
             state = RunnerState.SAVED;
         }
     }
 
-//    /**
-//     *  Initiates that the Runner has stopped running:
-//     *
-//     * */
-//    public void pause() {
-//        if(this.state == RunnerState.RUNNING) {
-//            state = RunnerState.SAVED;
-//        }
-//    }
+    /**
+     *  Initiates that the runner has stopped running but would still like to:
+     *      1. Resume their run and track their time
+     * */
+    public void pause() {
+        Log.d(TAG, "pause");
+        if(this.state == RunnerState.RUNNING) {
+            this.state = RunnerState.PAUSED;
+        }
+    }
 
     /**
      *  Initiates that the Runner has stopped running
-     *
+     *      1. End their run and stop tracking their time
+     *      2. Potentially record their time
      * */
     public void stop() {
         Log.d(TAG, "stop");
         if(this !=null) {
             state = RunnerState.STOPPED;
+        }
+    }
+
+    /**
+     *  Initiates that the runner is running and would like
+     *      1. Record their time and distance travelled
+     * */
+    public void restart() {
+        Log.d(TAG, "restart");
+        if(this.state == RunnerState.PAUSED) {
+            this.state = RunnerState.RESTARTED;
         }
     }
 
@@ -155,10 +184,6 @@ public class Runner {
 
     public void setIntermediaryLocation(Location intermediaryLocation) {
         this.intermediaryLocation = intermediaryLocation;
-    }
-
-    public Float getTotalDistanceRan() {
-        return totalDistanceRan;
     }
 
 }

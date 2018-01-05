@@ -1,5 +1,6 @@
 package com.example.davidvalentin.talaria;
 
+import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -169,10 +170,15 @@ public class RunningTrackerService extends Service {
     *   @return boolean a boolean value whether the service is running
     *
     * */
-    public boolean isServiceRunning(){
-        Log.d(TAG, "isServiceRunning");
-        return RunningTrackerService.this.isServiceRunning();
-    };
+    public boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /**
      *  Performs the callback by braodcasting to the activity the new currentDistanceTravelled
@@ -408,8 +414,8 @@ public class RunningTrackerService extends Service {
          *
          * */
 
-        public boolean isServiceRunning(){
-            return RunningTrackerService.this.isServiceRunning();
+        public boolean isServiceRunning(Class<?> serviceClass){
+            return RunningTrackerService.this.isServiceRunning(serviceClass);
         };
 
         public RunningTrackerService getRunningTrackerService() {

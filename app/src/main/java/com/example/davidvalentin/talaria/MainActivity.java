@@ -7,13 +7,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -107,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
 
-                    if (mRunningServiceBinder.getRunner().getState() == Runner.RunnerState.RUNNING) {
+                    if (mRunningServiceBinder.isServiceRunning(mRunningServiceBinder.getClass())) {
                         Log.d(TAG, "callback Running");
                         setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
                         // Updates the text of the timer
@@ -157,9 +155,8 @@ public class MainActivity extends AppCompatActivity {
         if(serviceConnection !=null ) {
             unbindService(serviceConnection);
             serviceConnection = null;
-
         }
-        if(mRunningServiceBinder.isServiceRunning()){
+        if(mRunningServiceBinder.isServiceRunning(mRunningServiceBinder.getClass())){
             this.stopService(new Intent(this, RunningTrackerService.class));
         }
         super.onDestroy();
@@ -215,11 +212,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickStartTimer");
         onClickChangeBtnColor(startBtn);
         startTimer();
-        if (mRunningServiceBinder == null) {
-            bindAndStartService();
-        } else {
-            Log.d(TAG, "Service connection is not null");
-        }
+        bindAndStartService();
+//        if (mRunningServiceBinder == null) {
+//        } else {
+//            Log.d(TAG, "Service connection is not null");
+//        }
 
     }
 

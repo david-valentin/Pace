@@ -4,6 +4,7 @@ package com.example.davidvalentin.talaria;
  * Created by davidvalentin on 1/2/18.
  */
 
+import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;

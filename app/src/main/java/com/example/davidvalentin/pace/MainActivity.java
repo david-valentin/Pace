@@ -1,8 +1,6 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -256,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
     public void onClickRestart(View view) {
         Log.d(TAG, "onClickRestart");
         onClickChangeBtnColor(restartBtn);
-        stopTimer();
+        killTimer();
         // Stop the service from continue tracking
         if (mRunningServiceBinder != null) {
             Log.d(TAG, "Stopping and Resetting Service Binder");

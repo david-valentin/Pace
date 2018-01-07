@@ -1,15 +1,8 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
 import android.content.Context;
 import android.location.Location;
-import android.location.LocationManager;
-import android.text.format.DateFormat;
 import android.util.Log;
-import android.widget.TextView;
-
-import org.w3c.dom.Text;
-
-import java.util.Calendar;
 
 
 /**
@@ -84,15 +77,6 @@ public class Runner {
         this.context = context;
     }
 
-    public int getProgress() {
-        Log.d(TAG, "getProgress");
-        if(this!=null) {
-            if(this.state == RunnerState.STOPPED || this.state == RunnerState.RUNNING)
-                return 0;
-        }
-        return 0;
-    }
-
     /**
      *  Initiates that the runner is running and would like
      *      1. Record their time and distance travelled
@@ -100,7 +84,11 @@ public class Runner {
     public void run() {
         Log.d(TAG, "run");
         if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
+            Log.d(TAG, "run");
             this.state = RunnerState.RUNNING;
+        } else {
+            this.state = RunnerState.RUNNING;
+            Log.d(TAG, "NONE OF THESE STATES");
         }
     }
 
@@ -113,7 +101,7 @@ public class Runner {
     public void save() {
         Log.d(TAG, "save");
         if(this.state != RunnerState.RUNNING) {
-            state = RunnerState.SAVED;
+            this.state = RunnerState.SAVED;
         }
     }
 
@@ -182,6 +170,10 @@ public class Runner {
 
     public void setIntermediaryLocation(Location intermediaryLocation) {
         this.intermediaryLocation = intermediaryLocation;
+    }
+
+    public void setRunnerState(RunnerState state) {
+        this.state = state;
     }
 
 }

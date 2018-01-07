@@ -1,10 +1,9 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
 /**
  * Created by davidvalentin on 1/2/18.
  */
 
-import android.app.ActivityManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.support.v4.app.NotificationCompat;
@@ -19,7 +18,7 @@ public class UtilityLibrary {
 
     private static final String TAG = "UtilityLibrary";
 
-    private static final String ApplicationName = "Talaria";
+    private static final String ApplicationName = "Pace";
 
     // The context where the class is being called
     private Context context;
@@ -44,9 +43,8 @@ public class UtilityLibrary {
         Log.d(TAG, "createNotification");
         int color = context.getResources().getColor(R.color.colorPrimary);
         NotificationCompat.Builder notification =
-
                 new NotificationCompat.Builder(context)
-                        .setSmallIcon(R.drawable.talaria_logo_96)
+                        .setSmallIcon(R.drawable.pace_logo_96)
                         .setContentIntent(pendingIntent)
                         .setColorized(true)
                         .setColor(color)

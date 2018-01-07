@@ -1,4 +1,4 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
 import org.junit.Test;
 

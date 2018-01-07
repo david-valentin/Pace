@@ -1,4 +1,4 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
 /**
  * Created by davidvalentin on 12/26/17.

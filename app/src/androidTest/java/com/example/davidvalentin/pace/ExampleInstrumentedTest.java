@@ -1,4 +1,4 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

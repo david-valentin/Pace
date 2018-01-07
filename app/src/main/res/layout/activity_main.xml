@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/white"
-    tools:context="com.example.davidvalentin.talaria.MainActivity">
+    tools:context="com.example.davidvalentin.pace.MainActivity">
 
 
     <android.support.v7.widget.Toolbar
@@ -27,7 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="5dp"
-                android:src="@drawable/talaria_logo_96" />
+                android:src="@drawable/pace_logo_96" />
 
             <ImageButton
                 android:id="@+id/profileBtn"

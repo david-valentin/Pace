@@ -1,13 +1,11 @@
-package com.example.davidvalentin.talaria;
+package com.example.davidvalentin.pace;
 
-import android.Manifest;
 import android.app.ActivityManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
@@ -16,8 +14,6 @@ import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-
-import static android.support.v4.app.ActivityCompat.requestPermissions;
 
 
 /**
@@ -121,6 +117,8 @@ public class RunningTrackerService extends Service {
      * */
     public void run() {
         Log.d(TAG, "run");
+        runner.run();
+        mRunnerThread.setThreadRunning(true);
         if (mRunnerThread != null) {
             Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
             mRunnerThread.setThreadRunning(true);
@@ -129,7 +127,6 @@ public class RunningTrackerService extends Service {
             mRunnerThread = new RunnerThread();
             mRunnerThread.setThreadRunning(true);
         }
-        runner.run();
     }
 
     /**
@@ -141,7 +138,7 @@ public class RunningTrackerService extends Service {
     public void save() {
         Log.d(TAG, "save");
         mRunnerThread.setThreadRunning(false);
-        runner.stop();
+        runner.save();
     }
 
     public void restart() {
@@ -171,24 +168,8 @@ public class RunningTrackerService extends Service {
      * */
     public void pause() {
         Log.d(TAG, "pause");
-        mRunnerThread.setThreadRunning(false);
+//        mRunnerThread.setThreadRunning(false);
         runner.pause();
-    }
-
-    /**
-    *   Checks if the service is running
-    *
-    *   @return boolean a boolean value whether the service is running
-    *
-    * */
-    public boolean isServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -207,21 +188,6 @@ public class RunningTrackerService extends Service {
             remoteCallbackList.getBroadcastItem(i).callback.distanceRan(currentDistanceTravelled);
         }
         remoteCallbackList.finishBroadcast();
-    }
-
-
-    /**
-     *  WARNING: DANGEROUS
-     *  Creates a new runner thread instance and replaces the old instance if it is null
-     *
-     */
-    protected void createNewRunnerThread() {
-        Log.d(TAG, "createNewRunnerThread");
-        if (this.mRunnerThread == null) {
-            this.mRunnerThread = new RunnerThread();
-        } else {
-            Log.d(TAG, "mRunnerThread already Exists!");
-        }
     }
 
     /**
@@ -268,9 +234,6 @@ public class RunningTrackerService extends Service {
      *
      * */
     public class RunnerThread extends Thread implements Runnable {
-
-        // Permissions request for locations
-        final private int REQUEST_CODE_ASK_PERMISSIONS = 123;
 
         // Internal TAG String
         private static final String TAG = "RunnerThread";
@@ -335,8 +298,6 @@ public class RunningTrackerService extends Service {
 
                         // Add that distance to the total distance
                         totalDistanceRan += currentDistanceTravelled;
-
-                        Log.d(TAG, "Current Distance Travelled: " + Float.toString(currentDistanceTravelled));
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
                         Log.d(TAG, "Error: " + e.toString());
@@ -346,6 +307,7 @@ public class RunningTrackerService extends Service {
                     // Update the time and call the method doCallbacks => will get the broadcast item
                     doCallbacks(totalDistanceRan);
                 } else {
+
                     Log.d(TAG, "RUNNER STATE: " + runner.getState());
                 }
 
@@ -435,10 +397,6 @@ public class RunningTrackerService extends Service {
          *  Getters and Setters for RunningServiceBinder
          *
          * */
-
-        public boolean isServiceRunning(Class<?> serviceClass){
-            return RunningTrackerService.this.isServiceRunning(serviceClass);
-        };
 
         public RunningTrackerService getRunningTrackerService() {
             return RunningTrackerService.this.getRunningTrackerService();

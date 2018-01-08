@@ -1,4 +1,4 @@
-package com.example.davidvalentin.pace;
+package com.example.database.backend;
 
 import android.net.Uri;
 
@@ -10,15 +10,17 @@ public class PaceProviderContract {
 
     public static final String AUTHORITY = "com.example.davidvalentin.pace";
 
-    public static final Uri RECIPE_URI = Uri.parse("content://"+AUTHORITY+"/paceDb");
+    private static final String PACE_TABLE = "paceDB";
+
+    public static final Uri CONTENT_URI = Uri.parse("content://"+AUTHORITY+ "/" + PACE_TABLE);
 
     public static final String _ID = "_id";
 
     // Column value names
-    public static final String TOTAL_DISTANCE_RAN = "totalDistanceRan";
-    public static final String TOTAL_TIME = "totalTime";
-    public static final String SPEED = "speed";
-    public static final String DATE = "dateObj";
+    public static final String TOTAL_KILOMETERS_RAN = "totalKilometersRan";
+    public static final String TOTAL_HOURS = "totalHours";
+    public static final String KILOMETERS_PER_HOUR = "kilometersPerHour";
+    public static final String DATE = "date";
 
     // Content Provider Strings
     public static final String CONTENT_TYPE_SINGLE = "vnd.android.cursor.item/PaceContentProvider.data.text";

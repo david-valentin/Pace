@@ -1,4 +1,6 @@
 <resources>
-    <string name="app_name">Talaria</string>
-    <string name="AppName">Talaria</string>
+    <string name="app_name">Pace</string>
+    <string name="AppName">Pace</string>
+    <string name="kilometers">Kilometers</string>
+    <string name="pace">Pace</string>
 </resources>

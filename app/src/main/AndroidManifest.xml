@@ -11,8 +11,8 @@
         android:supportsRtl="true"
         >
         <provider
-            android:name=".PaceContentProvider"
-            android:authorities="com.example.davidvalentin.pace.PaceContentProvider"
+            android:name="com.example.database.backend.PaceContentProvider"
+            android:authorities="com.example.database.backend.PaceContentProvider"
             android:exported="true"
             android:multiprocess="true"></provider>
         <activity

@@ -9,6 +9,9 @@ public class ProfileViewController extends AppCompatActivity {
     // TAG
     private static final String TAG = "ProfileViewController";
 
+    //XML COMPONENTS
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");

@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Binder;
@@ -77,7 +78,6 @@ public class RunningTrackerService extends Service {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         mRunnerThread.setThreadRunning(false);
-        mRunnerThread = null;
         // Cancel the notification
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.cancel(CHANNEL_ID);
@@ -122,11 +122,12 @@ public class RunningTrackerService extends Service {
         if (mRunnerThread != null) {
             Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
             mRunnerThread.setThreadRunning(true);
-        } else {
-            Log.d(TAG, "RUNNER THREAD IS NULL");
-            mRunnerThread = new RunnerThread();
-            mRunnerThread.setThreadRunning(true);
         }
+//        else {
+//            Log.d(TAG, "RUNNER THREAD IS NULL");
+//            mRunnerThread = new RunnerThread();
+//            mRunnerThread.setThreadRunning(true);
+//        }
     }
 
     /**
@@ -168,7 +169,7 @@ public class RunningTrackerService extends Service {
      * */
     public void pause() {
         Log.d(TAG, "pause");
-//        mRunnerThread.setThreadRunning(false);
+        mRunnerThread.setThreadRunning(false);
         runner.pause();
     }
 
@@ -190,6 +191,31 @@ public class RunningTrackerService extends Service {
         remoteCallbackList.finishBroadcast();
     }
 
+    //Checks if the mp3 player is playing
+    public boolean isRunnerRunning(){
+        Log.d(TAG, "isRunnerRunning");
+        if(runner.getState() == Runner.RunnerState.RUNNING){
+            Log.d(TAG, "RUNNING");
+            return true;
+        } else if (runner.getState() == Runner.RunnerState.PAUSED)  {
+            Log.d(TAG, "PAUSED");
+            return false;
+        } else if (runner.getState() == Runner.RunnerState.RESTARTED) {
+            Log.d(TAG, "RESTARTED");
+            return false;
+        } else if (runner.getState() == Runner.RunnerState.SAVED) {
+            Log.d(TAG, "SAVED");
+            return false;
+        } else if (runner.getState() == Runner.RunnerState.RESTARTED) {
+            Log.d(TAG, "RESTARTED");
+            return false;
+        } else {
+            Log.d(TAG, "ANONAMALY: " + runner.getState().toString());
+            return false;
+        }
+    }
+
+
     /**
      *
      * Getters and Setters for RunningTrackerService
@@ -197,16 +223,16 @@ public class RunningTrackerService extends Service {
      * */
 
     public Runner getRunner() {
-        return runner;
+        return this.runner;
     }
 
     public LocationManager getmLocationManager() {
-        return mLocationManager;
+        return this.mLocationManager;
     }
 
 
     public LocationListener getmLocationListener() {
-        return mLocationListener;
+        return this.mLocationListener;
     }
 
     public void setmLocationManager(LocationManager mLocationManager) {
@@ -222,7 +248,7 @@ public class RunningTrackerService extends Service {
     }
 
     public RunnerThread getmRunnerThread() {
-        return mRunnerThread;
+        return this.mRunnerThread;
     }
 
     public void setmRunnerThread(RunnerThread mRunnerThread) {
@@ -239,13 +265,15 @@ public class RunningTrackerService extends Service {
         private static final String TAG = "RunnerThread";
 
         // Boolean object to see if the thread is running
-        public boolean threadRunning = true;
+        private boolean threadRunning = true;
 
         // Keeps track of the difference in distance
-        public float currentDistanceTravelled = 0;
+        private float currentDistanceTravelled = 0;
 
         // Keeps track of the total distance travelled
-        public float totalDistanceRan = 0;
+        private float totalDistanceRan = 0;
+
+        private float speed = 0;
 
         public RunnerThread() {
             // Starts the thread
@@ -256,7 +284,7 @@ public class RunningTrackerService extends Service {
             mLocationListener = new MyLocationListener();
 
             // Reset the values when first instantiated
-            setCurrentDistance(0);
+            setCurrentDistanceTravelled(0);
             setTotalDistanceRan(0);
 
             // Access it regardless
@@ -289,15 +317,22 @@ public class RunningTrackerService extends Service {
                     try {Thread.sleep(1000);} catch (Exception e) {Log.d(TAG, "Error Message: " + e.toString());}
                     try {
                         // Set the intermediary location as this the last known location
-                        runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                        runner.setIntermediaryLocation(getmLocationManager().getLastKnownLocation(LocationManager.GPS_PROVIDER));
 
                         // currentDistanceTravelled is the distance from the getIntermediaryLocation() + and the start
                         currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
 
+//                        setCurrentDistanceTravelled(getRunner().getIntermediaryLocation().distanceTo(getRunner().getStartLocation()));
+
+                        // Set the new start location as the intermediary location => Allows us to accurately capture the totalDistanceRan
                         runner.setStartLocation(runner.getIntermediaryLocation());
+
+                         setSpeed(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getSpeed());
 
                         // Add that distance to the total distance
                         totalDistanceRan += currentDistanceTravelled;
+
+
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
                         Log.d(TAG, "Error: " + e.toString());
@@ -320,33 +355,29 @@ public class RunningTrackerService extends Service {
         *
         * */
 
-        public boolean isThreadRunning() {
+        private boolean isThreadRunning() {
             return threadRunning;
         }
 
-        public void setThreadRunning(boolean threadRunning) {
+        private void setThreadRunning(boolean threadRunning) {
             this.threadRunning = threadRunning;
         }
 
-        public float getCurrentDistance() {
+        public float getCurrentDistanceTravelled() {
             return currentDistanceTravelled;
         }
 
-        public void setCurrentDistance(float currentDistanceTravelled) {
-            this.currentDistanceTravelled = currentDistanceTravelled;
-        }
-
-        public Runner getRunner() {
-            return runner;
-        }
+        public void setCurrentDistanceTravelled(float currentDistanceTravelled) {this.currentDistanceTravelled = currentDistanceTravelled;}
 
         public float getTotalDistanceRan() {
             return totalDistanceRan;
         }
 
-        public void setTotalDistanceRan(float totalDistanceRan) {
-            this.totalDistanceRan = totalDistanceRan;
-        }
+        private void setTotalDistanceRan(float totalDistanceRan) {this.totalDistanceRan = totalDistanceRan;}
+
+        public float getSpeed() {return speed;}
+
+        private void setSpeed(float speed) {this.speed = speed;}
 
     }
 
@@ -392,6 +423,10 @@ public class RunningTrackerService extends Service {
             remoteCallbackList.unregister(RunningServiceBinder.this);
         }
 
+        public boolean isRunnerRunning() {
+            return RunningTrackerService.this.isRunnerRunning();
+        }
+
         /**
          *
          *  Getters and Setters for RunningServiceBinder
@@ -403,15 +438,15 @@ public class RunningTrackerService extends Service {
         }
 
         public Runner getRunner() {
-            return runner;
+            return RunningTrackerService.this.getRunner();
         }
 
         public RunnerThread getmRunnerThread() {
-            return this.getmRunnerThread();
+            return RunningTrackerService.this.getmRunnerThread();
         }
 
         public void setmRunnerThread(RunnerThread mRunnerThread) {
-            this.setmRunnerThread(mRunnerThread);
+            RunningTrackerService.this.setmRunnerThread(mRunnerThread);
         }
     }
 }

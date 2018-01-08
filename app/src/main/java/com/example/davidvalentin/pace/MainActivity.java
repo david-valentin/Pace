@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Static member variables
     private static final String TAG = "MainActivity";
-    private static final String TAG_EXCEPTION = "Error in MainActivity";
+    private static final String EXCEPTION_TAG = "Error in MainActivity";
     private static final int CHANNEL_ID = 1;
     private static final String DEFAULT_TIME_TEXT = "0:00";
     private static final String DEFAULT_DISTANCE_TEXT = "0.00";
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set the values to zero
         distanceRan = new Float(0);
-        this.dbHelper = new DBHelper(this);
+        dbHelper = new DBHelper(this);
     }
 
 
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     // Updates the text of the timer
                     distanceText = findViewById(R.id.distanceText);
                     Log.d(TAG, "Current Distance: " + currentDistance);
-                    distanceText.setText(mUtilityLibrary.convertMetersToKilometersSting(currentDistance));
+                    distanceText.setText(mUtilityLibrary.convertMetersToKilometersString(currentDistance));
                 }
             });
         }
@@ -483,7 +483,7 @@ public class MainActivity extends AppCompatActivity {
             Toast alertToast = mUtilityLibrary.createToast("Your data was saved!", Toast.LENGTH_LONG);
             alertToast.show();
         } catch (Exception e) {
-            Log.d(TAG_EXCEPTION, e.toString());
+            Log.d(EXCEPTION_TAG, e.toString());
             Toast alertToast = mUtilityLibrary.createToast("Could not save your data", Toast.LENGTH_LONG);
             alertToast.show();
         }

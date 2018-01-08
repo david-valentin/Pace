@@ -1,40 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.davidvalentin.pace.ProfileViewController">
+    android:background="@android:color/white"
+    tools:context="com.example.davidvalentin.pace.MainActivity">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/profileViewToolbar"
+        android:id="@+id/mainActivityToolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:background="?attr/colorPrimary"
-        android:minHeight="?attr/actionBarSize"
-        android:textAlignment="center"
         android:scrollbars="vertical"
-        app:title="Profile"
-        app:titleTextColor="@android:color/white">
+        android:textAlignment="center"
+        android:theme="@style/TopToolbarTheme">
+
+        <RelativeLayout
+            android:id="@+id/relTopToolbarContainer"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/logoIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/pace_logo_96"
+                android:contentDescription="@string/AppName"
+                />
+
+            <TextView
+                android:id="@+id/paceHeaderText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:text="@string/user_profile"
+                android:theme="@style/HeaderText" />
 
 
-
+        </RelativeLayout>
     </android.support.v7.widget.Toolbar>
 
     <LinearLayout
-        android:id="@+id/runningStatsContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginTop="50dp"
-        android:orientation="vertical"
-        app:layout_constraintTop_toTopOf="parent" >
+        android:weightSum="4"
+        android:orientation="vertical" >
 
-        <ListView
-            android:id="@+id/runningStatsListView"
+
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/listViewContainer"
+            >
 
+            <TextView
+                android:id="@+id/userDataHeaderText"
+                android:text="@string/profile_stats"
+                android:layout_width="match_parent"
+                android:theme="@style/UserProfileHeaderText"
+                android:textAlignment="center"
+                android:layout_weight="1"
+                android:layout_height="match_parent" />
+
+            <ListView
+                android:id="@+id/runningStatsListView"
+                android:layout_width="match_parent"
+                android:layout_height="234dp"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/graphContainer"
+
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/graphHeaderText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.5"
+                android:text="@string/progress"
+                android:textAlignment="center"
+                android:theme="@style/UserProfileHeaderText" />
+
+            <com.jjoe64.graphview.GraphView
+                android:id="@+id/paceGraph"
+                android:layout_width="match_parent"
+                android:layout_height="200dip"
+                android:layout_weight="1.5" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</android.support.constraint.ConstraintLayout>
+
+</RelativeLayout>

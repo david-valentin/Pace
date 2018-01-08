@@ -27,6 +27,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingLeft="5dp"
+                android:contentDescription="@string/AppName"
                 android:src="@drawable/pace_logo_96" />
 
             <ImageButton
@@ -38,10 +39,11 @@
                 android:background="?attr/colorPrimary"
                 android:onClick="onClickGoToProfileView"
                 android:src="@drawable/profile_icon_96"
+                android:contentDescription="@string/profile_button"
                 android:theme="@style/ImageButtonThemeRight" />
 
             <TextView
-                android:id="@+id/talariaHeaderText"
+                android:id="@+id/paceHeaderText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
@@ -171,6 +173,7 @@
                     android:layout_alignParentTop="true"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="24dp"
+                    android:contentDescription="@string/save_run_data_button"
                     app:srcCompat="@drawable/heart_run_96" />
 
             </RelativeLayout>

@@ -1,6 +1,7 @@
 package com.example.database.backend;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -11,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
+
+import static com.example.database.backend.PaceProviderContract.PACE_TABLE;
 
 /**
  * Created by davidvalentin on 12/30/17.
@@ -32,24 +35,22 @@ public class PaceContentProvider extends ContentProvider {
 
     private static final UriMatcher uriMatcher;
 
+    /*
+    * UriMatcher instance to return a value of 1 when the URI references the entire products table,
+    * and a value of 2 when the URI references the ID of a specific row in the products table
+    * */
+    public static final int PACE_DATA = 2;
+    public static final int PACE_DATA_ID = 1;
+
+
+
     static {
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-
         // routes to main database
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "paceDB", 1);
+        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/",  PACE_DATA);
         // _id uri
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "paceDB/#", 2);
-
-        // route for totalDistanceRan
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "totalDistanceRan", 3);
-
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "totalDistanceRan/#", 4);
-
-        // route for
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "totalTime", 5);
-
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, "totalTime/#", 6);
+        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/#", PACE_DATA_ID);
     }
 
     /**
@@ -82,28 +83,43 @@ public class PaceContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
-        Log.d(TAG, "query");
 
-        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        queryBuilder.setTables(dbHelper.getTableName());
+        Log.d(TAG, "query " + uriMatcher.match(uri));
 
-        int uriType = uriMatcher.match(uri);
 
-        switch (uriType) {
-            case 1:
-                queryBuilder.appendWhere(PaceProviderContract._ID + "="
-                        + uri.getLastPathSegment());
-                break;
-            case 2:
-                break;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+        switch(uriMatcher.match(uri))
+        {
+            case PACE_DATA_ID:
+                selection = "_ID = " + uri.getLastPathSegment();
+            case PACE_DATA:
+                Log.d(TAG, "HIT");
+                String q7 = String.format("SELECT * FROM paceData;");
+                return db.rawQuery(q7, selectionArgs);
             default:
-                throw new IllegalArgumentException("Unknown URI");
+                return null;
         }
 
-        Cursor cursor = queryBuilder.query(dbHelper.getReadableDatabase(),
-                projection, selection, selectionArgs, null, null, sortOrder);
-        cursor.setNotificationUri(getContext().getContentResolver(), uri);
-        return cursor;
+//        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+//        queryBuilder.setTables(PaceProviderContract.PACE_TABLE);
+//        int uriType = uriMatcher.match(uri);
+//
+//        switch (uriType) {
+//            case PACE_DATA_ID:
+//                queryBuilder.appendWhere(PaceProviderContract._ID + "="
+//                        + uri.getLastPathSegment());
+//                break;
+//            case PACE_DATA:
+//                break;
+//            default:
+//                throw new IllegalArgumentException("Unknown URI");
+//        }
+//
+//        Cursor cursor = queryBuilder.query(dbHelper.getReadableDatabase(),
+//                projection, selection, selectionArgs, null, null, sortOrder);
+//        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+//        return cursor;
     }
 
     /**
@@ -136,7 +152,7 @@ public class PaceContentProvider extends ContentProvider {
 
         long id = 0;
         switch (uriType) {
-            case 1:
+            case PACE_DATA_ID:
                 id = paceDb.insert(dbHelper.getDatabaseName(),
                         null, contentValues);
                 break;
@@ -159,8 +175,7 @@ public class PaceContentProvider extends ContentProvider {
     @Override
     public int delete(@NonNull Uri uri, @Nullable String s, @Nullable String[] strings) {
         Log.d(TAG, "delete");
-
-        return 0;
+        throw new UnsupportedOperationException("not implemented");
     }
 
     /**
@@ -211,4 +226,6 @@ public class PaceContentProvider extends ContentProvider {
         getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
     }
+
+
 }

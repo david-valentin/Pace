@@ -100,7 +100,7 @@ public class UtilityLibrary {
      * @param meters the number of meters ran
      * @return the string representation of the number of kilometers
      * */
-    public String convertMetersToKilometersSting(double meters) {
+    public String convertMetersToKilometersString(double meters) {
         Log.d(TAG, "convertMetersToKilometersSting");
         double miles = getMetersToKilometers() * meters ;
         return String.format("%.2f", miles);

@@ -3,4 +3,9 @@
     <string name="AppName">Pace</string>
     <string name="kilometers">Kilometers</string>
     <string name="pace">Pace</string>
+    <string name="user_profile">User Profile</string>
+    <string name="profile_stats">Profile Stats</string>
+    <string name="progress">Progress</string>
+    <string name="save_run_data_button">Save run data button</string>
+    <string name="profile_button">Profile button</string>
 </resources>

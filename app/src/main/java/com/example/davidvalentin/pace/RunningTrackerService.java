@@ -30,6 +30,8 @@ public class RunningTrackerService extends Service {
 
     // Member variables
     private static final String TAG = "RunningTrackerService";
+    private static final String EXCEPTION_TAG = "ERROR IN RTService";
+
     private static final int CHANNEL_ID = 0;
 
     // Callback for the thread
@@ -297,7 +299,7 @@ public class RunningTrackerService extends Service {
                         mLocationListener);
                 Log.d(TAG, "Start Location is: " + runner.getStartLocation());
             } catch (SecurityException e) {
-                Log.d(TAG, e.toString());
+                Log.d(EXCEPTION_TAG, e.toString());
             }
 
             this.start();
@@ -314,10 +316,10 @@ public class RunningTrackerService extends Service {
             while (isThreadRunning()) {
 
                 if (runner.getState() == Runner.RunnerState.RUNNING) {
-                    try {Thread.sleep(1000);} catch (Exception e) {Log.d(TAG, "Error Message: " + e.toString());}
+                    try {Thread.sleep(1000);} catch (Exception e) {Log.d(EXCEPTION_TAG, "Error Message: " + e.toString());}
                     try {
                         // Set the intermediary location as this the last known location
-                        runner.setIntermediaryLocation(getmLocationManager().getLastKnownLocation(LocationManager.GPS_PROVIDER));
+                        runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
 
                         // currentDistanceTravelled is the distance from the getIntermediaryLocation() + and the start
                         currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
@@ -335,7 +337,7 @@ public class RunningTrackerService extends Service {
 
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
-                        Log.d(TAG, "Error: " + e.toString());
+                        Log.d(EXCEPTION_TAG, "Error: " + e.toString());
 
                         // Get the current distance ran here => log the long variable and use the api to track the
                     }

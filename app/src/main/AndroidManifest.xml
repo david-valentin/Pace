@@ -11,10 +11,11 @@
         android:supportsRtl="true"
         >
         <provider
-            android:name="com.example.database.backend.PaceContentProvider"
             android:authorities="com.example.database.backend.PaceContentProvider"
             android:exported="true"
-            android:multiprocess="true"></provider>
+            android:multiprocess="true"
+            android:name="com.example.database.backend.PaceContentProvider">
+        </provider>
         <activity
             android:name="com.example.davidvalentin.pace.MainActivity"
             android:launchMode="singleInstance"

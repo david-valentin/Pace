@@ -124,12 +124,11 @@ public class RunningTrackerService extends Service {
         if (mRunnerThread != null) {
             Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
             mRunnerThread.setThreadRunning(true);
+        } else {
+            Log.d(TAG, "RUNNER THREAD IS NULL");
+            mRunnerThread = new RunnerThread();
+            mRunnerThread.setThreadRunning(true);
         }
-//        else {
-//            Log.d(TAG, "RUNNER THREAD IS NULL");
-//            mRunnerThread = new RunnerThread();
-//            mRunnerThread.setThreadRunning(true);
-//        }
     }
 
     /**

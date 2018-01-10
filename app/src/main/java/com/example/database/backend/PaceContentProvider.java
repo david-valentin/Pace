@@ -54,6 +54,7 @@ public class PaceContentProvider extends ContentProvider {
     }
 
     /**
+     * Called when the content provider is first created
      *
      * @return
      */
@@ -61,7 +62,7 @@ public class PaceContentProvider extends ContentProvider {
     public boolean onCreate() {
         Log.d(TAG, "onCreate");
         try {
-            this.dbHelper = new DBHelper(this.getContext(), "paceDb", null, 7);
+            this.dbHelper = new DBHelper(this.getContext(), PaceProviderContract.DATABASE_NAME, null, 7);
             return true;
         } catch (Exception e) {
             Log.d(TAG, e.toString());
@@ -71,6 +72,9 @@ public class PaceContentProvider extends ContentProvider {
     }
 
     /**
+     * This method will be called when a client requests that data be retrieved from the content provider.
+     * It is the responsibility of this method to identify the data to be retrieved (either single or multiple rows),
+     * perform the data extraction and return the results wrapped in a Cursor object.
      *
      * @param uri
      * @param projection
@@ -83,46 +87,23 @@ public class PaceContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
-
-        Log.d(TAG, "query " + uriMatcher.match(uri));
-
-
+        Log.d(TAG, "query | Matched URI: " + uriMatcher.match(uri));
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
         switch(uriMatcher.match(uri))
         {
-            case PACE_DATA_ID:
+            case PACE_DATA_ID: // The case where we are fetching a specific id
                 selection = "_ID = " + uri.getLastPathSegment();
-            case PACE_DATA:
-                Log.d(TAG, "HIT");
-                String q7 = String.format("SELECT * FROM paceData;");
+            case PACE_DATA: // The case where we are fetching all values
+                String q7 = String.format("SELECT * FROM " + PACE_TABLE);
                 return db.rawQuery(q7, selectionArgs);
             default:
                 return null;
         }
-
-//        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-//        queryBuilder.setTables(PaceProviderContract.PACE_TABLE);
-//        int uriType = uriMatcher.match(uri);
-//
-//        switch (uriType) {
-//            case PACE_DATA_ID:
-//                queryBuilder.appendWhere(PaceProviderContract._ID + "="
-//                        + uri.getLastPathSegment());
-//                break;
-//            case PACE_DATA:
-//                break;
-//            default:
-//                throw new IllegalArgumentException("Unknown URI");
-//        }
-//
-//        Cursor cursor = queryBuilder.query(dbHelper.getReadableDatabase(),
-//                projection, selection, selectionArgs, null, null, sortOrder);
-//        cursor.setNotificationUri(getContext().getContentResolver(), uri);
-//        return cursor;
     }
 
     /**
+     *  Returns the MIME type of the data stored by the content provider.
      *
      * @param uri
      * @return
@@ -131,11 +112,20 @@ public class PaceContentProvider extends ContentProvider {
     @Override
     public String getType(@NonNull Uri uri) {
         Log.d(TAG, "getType");
-        return null;
+        String contentType;
+        if (uri.getLastPathSegment()==null)
+        {
+            contentType = PaceProviderContract.CONTENT_TYPE_MULTIPLE;
+        }
+        else
+        {
+            contentType = PaceProviderContract.CONTENT_TYPE_SINGLE;
+        }
+        return contentType;
     }
 
     /**
-     * insert creates a uri and inserts the contentValues into the database
+     * Insert creates a uri and inserts the contentValues into the database
      *
      * @param uri the uri to be matched with our list of uris
      * @param contentValues the values to be inserted into the database
@@ -167,6 +157,7 @@ public class PaceContentProvider extends ContentProvider {
 
     /**
      *
+     *
      * @param uri
      * @param s
      * @param strings
@@ -179,6 +170,9 @@ public class PaceContentProvider extends ContentProvider {
     }
 
     /**
+     * The method called when existing rows need to be updated on behalf of the client.
+     * The method uses the arguments passed through to update the appropriate table rows and return the
+     * number of rows updated as a result of the operation.
      *
      * @param uri
      * @param values

@@ -6,8 +6,11 @@ package com.example.davidvalentin.pace;
 
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
@@ -16,6 +19,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
+
+import java.sql.Date;
+import java.util.ArrayList;
+
 /**
  *  A class that holds several static functions
  *
@@ -23,6 +32,7 @@ import android.widget.Toast;
 public class UtilityLibrary {
 
     private static final String TAG = "UtilityLibrary";
+    private static final String EXCEPTION_TAG = "ERROR in UtilityLibrary";
 
     private static final String ApplicationName = "Pace";
 
@@ -62,7 +72,6 @@ public class UtilityLibrary {
                         .setColor(color)
                         .setContentTitle(ApplicationName)
                         .setContentText(contentText);
-
         return notification;
     }
 
@@ -146,11 +155,6 @@ public class UtilityLibrary {
         }, 0);
     }
 
-    public void calculateSpeed(Float totalDistanceTravellled, String timeText) {
-
-
-    }
-
     /**
      *
      * @param elapsedTime
@@ -171,27 +175,20 @@ public class UtilityLibrary {
         AlertDialog.Builder builder = new AlertDialog.Builder(context)
                                         .setTitle("Confirm")
                                         .setMessage("Are you sure?");
-
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
 
             public void onClick(DialogInterface dialog, int which) {
-                // Do nothing but close the dialog
-
                 dialog.dismiss();
             }
         });
-
         builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-
                 // Do nothing
                 dialog.dismiss();
             }
         });
-
         AlertDialog alert = builder.create();
-
         return alert;
     }
 
@@ -199,13 +196,101 @@ public class UtilityLibrary {
         Log.d(TAG, "checkForDefaultTextValues");
         if (distanceText.getText().toString().equalsIgnoreCase(DEFAULT_DISTANCE_TEXT) && timerText.getText().toString().equalsIgnoreCase(DEFAULT_TIME_TEXT)) {
             Log.d("check", "true");
-
             return true;
         } else {
             Log.d("check", "false");
             return false;
         }
     }
+
+
+    /**
+     * Stores the outputs of the cursor object into a ArrayList and
+     * logs the data
+     *
+     * @param c is the cursor object we are checking if there are values
+     */
+    public void logCursorContents(Cursor c) {
+        Log.d(TAG, "logCursorContents");
+        try {
+            ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
+            ContentValues map;
+            if(c.moveToFirst()) {
+                do {
+                    map = new ContentValues();
+                    DatabaseUtils.cursorRowToContentValues(c, map);
+                    retVal.add(map);
+                    Log.d(TAG, "Content Values: " + retVal.get(c.getPosition()));
+                } while(c.moveToNext());
+            }
+        } catch (Exception e) {
+            Log.d(EXCEPTION_TAG, e.toString());
+        }
+    }
+
+    /**
+     * Checks if there are even contents being returned to the cursor object
+     *
+     * @param c
+     * @return boolean
+     */
+    public boolean doesCursorContentsExist(Cursor c) {
+        Log.d(TAG, "doesCursorContentsExist");
+        try {
+            ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
+            ContentValues map;
+            if(c.moveToFirst()) {
+                do {
+                    map = new ContentValues();
+                    DatabaseUtils.cursorRowToContentValues(c, map);
+                    retVal.add(map);
+                } while(c.moveToNext());
+            }
+            return true;
+        } finally {
+            Log.d(EXCEPTION_TAG, "doesCursorContentsExist");
+            c.close();
+            return false;
+        }
+    }
+
+
+    public String[] formatUserDataText(String colsToDisplay[]) {
+        Log.d(TAG, "formatUserDataText");
+        String reformattedValues[] = new String[]{};
+        for (int i = 0; i < colsToDisplay.length; i++) {
+            // When it will be the date object
+            if (i != 3) {
+                int indexOfDecimal = colsToDisplay[i].indexOf('.');
+                // Get 2 chars after the . and then substring it => Ugly I know..
+                reformattedValues[i] = colsToDisplay[i].substring(0, indexOfDecimal+2);
+            } else {
+                reformattedValues[i] = colsToDisplay[i];
+            }
+        }
+        return reformattedValues;
+    }
+
+
+    public LineGraphSeries<DataPoint> createLineGraphSeries(int numberOfDataPoints, ArrayList<ContentValues> cursorValues) {
+
+//        for (int i = numberOfDataPoints; i < numberOfDataPoints; i++) {
+//
+//            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
+//                    new DataPoint(0, 1),
+//                    new DataPoint(1, 5),
+//                    new DataPoint(2, 3),
+//                    new DataPoint(3, 2),
+//                    new DataPoint(4, 6)
+//            });
+//        }
+//
+//        return series;
+
+        return null;
+    }
+
+
 
     /**
      *

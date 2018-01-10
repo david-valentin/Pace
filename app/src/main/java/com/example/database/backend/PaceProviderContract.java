@@ -11,8 +11,10 @@ public class PaceProviderContract {
     public static final String AUTHORITY = "com.example.database.backend.PaceContentProvider";
 
     public static final String PACE_TABLE = "paceData";
+    public static final String DATABASE_NAME = "paceDB";
 
-    public static final Uri CONTENT_URI = Uri.parse("content://"+ AUTHORITY+ "/paceData");
+
+    public static final Uri CONTENT_URI = Uri.parse("content://"+ AUTHORITY+ "/" + PACE_TABLE);
 
     public static final String _ID = "_id";
 

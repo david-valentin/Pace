@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  *
@@ -37,12 +39,10 @@ public class ProfileViewController extends AppCompatActivity {
     //XML COMPONENTS
     private ListView runningStatsListView;
     private GraphView paceGraph;
-    private DBHelper dbHelper = null;
 
     // Private Member Variables
     private SimpleCursorAdapter dataAdapter;
-
-
+    private UtilityLibrary mUtilityLibrary;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +50,8 @@ public class ProfileViewController extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_view);
         queryContentProvider();
-        dbHelper = new DBHelper(this.getApplicationContext());
+
+        this.mUtilityLibrary = new UtilityLibrary(this);
 
         paceGraph = (GraphView) findViewById(R.id.paceGraph);
         LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
@@ -60,8 +61,10 @@ public class ProfileViewController extends AppCompatActivity {
                 new DataPoint(3, 2),
                 new DataPoint(4, 6)
         });
-        paceGraph.addSeries(series);
 
+        series.appendData(new DataPoint(5, 7), true, 7);
+
+        paceGraph.addSeries(series);
     }
 
     /**
@@ -75,29 +78,46 @@ public class ProfileViewController extends AppCompatActivity {
     public void onResume() {
         Log.d(TAG, "onResume");
         super.onResume();
-//
-//        dbHelper = new DBHelper(this);
-//        SQLiteDatabase db = dbHelper.getWritableDatabase();
-//        Cursor recipeCursor = db.query("recipes", new String[] { "_id", "recipeTitle", "recipeInstructions" },
-//                null, null, null, null, null);
-//
-//        String[] columns = new String[] {
-//                RecipeProviderContract.RECIPE_TITLE
-//        };
-//
-//        int[] to = new int[] {
-//                R.id.recipeListRow,
-//        };
-//
-//        dataAdapter = new SimpleCursorAdapter(
-//                this, R.layout.recipelistviewrow,
-//                recipeCursor,
-//                columns,
-//                to,
-//                0);
-//
-//        dataAdapter.notifyDataSetChanged();
-//        recipeListView.setAdapter(dataAdapter);
+
+        String[] projection = new String[] {
+                PaceProviderContract._ID,
+                PaceProviderContract.TOTAL_KILOMETERS_RAN,
+                PaceProviderContract.TOTAL_HOURS,
+                PaceProviderContract.KILOMETERS_PER_HOUR,
+                PaceProviderContract.DATE,
+        };
+        String colsToDisplay [] = new String[] {
+                PaceProviderContract.TOTAL_KILOMETERS_RAN,
+                PaceProviderContract.TOTAL_HOURS,
+                PaceProviderContract.KILOMETERS_PER_HOUR,
+                PaceProviderContract.DATE
+        };
+        int[] colResIds = new int[] {
+                R.id.totalDistance,
+                R.id.totalTime,
+                R.id.speed,
+                R.id.date
+        };
+        Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
+
+        if (c != null && c.getCount() > 0) {
+            try {
+                dataAdapter = new SimpleCursorAdapter(
+                        this,
+                        R.layout.pace_data_listview_row,
+                        c,
+                        colsToDisplay,
+                        colResIds,
+                        0);
+                runningStatsListView = findViewById(R.id.runningStatsListView);
+                dataAdapter.notifyDataSetChanged();
+                runningStatsListView.setAdapter(dataAdapter);
+            } catch (Exception e) {
+                Log.d(EXCEPTION_TAG, e.toString());
+            }
+        } else {
+            Log.d(EXCEPTION_TAG, "onResume check failed");
+        }
     }
 
     /**
@@ -133,60 +153,36 @@ public class ProfileViewController extends AppCompatActivity {
                     R.id.date
             };
 
-
             Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
-            String query = "SELECT * from paceData";
-            Cursor c_2   = dbHelper.getReadableDatabase().rawQuery(query, null);
-
-            ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
-            ContentValues map;
-            if(c.moveToFirst()) {
-                do {
-                    map = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(c, map);
-                    retVal.add(map);
-                    Log.d(TAG, "FLOAT " + c_2.getFloat(1));
-
-                } while(c.moveToNext());
-            }
-
-            ArrayList<ContentValues> retVal_2 = new ArrayList<ContentValues>();
-            ContentValues map_two;
-            if(c_2.moveToFirst()) {
-                do {
-                    map_two = new ContentValues();
-                    DatabaseUtils.cursorRowToContentValues(c_2, map_two);
-                    retVal.add(map_two);
-                    Log.d(TAG, "FLOAT " + c_2.getFloat(1));
-                } while(c.moveToNext());
-            }
-
-//            Log.d(TAG, " " + cursor.getColumnCount());
-//            Log.d(TAG, "Float " + cursor.getFloat(1));
 
 
+            UtilityLibrary mUtilityLibrary = new UtilityLibrary(this);
+//            mUtilityLibrary.logCursorContents(c);
 
+//            ArrayList<ContentValues> myData = mUtiliLibrary.returnCursorContents(c);
+//            Set<String> keySet = myData.get(1).keySet();
+//
+//            for (int i = 0; i < myData.size()-1; i++) {
+//                Log.d(TAG, "MyData: " + myData.get(i));
+//                Log.d(TAG, "Keys: " + keySet.toString());
+//            }
 
             dataAdapter = new SimpleCursorAdapter(
                     this,
                     R.layout.pace_data_listview_row,
-                    c_2,
+                    c,
                     colsToDisplay,
                     colResIds,
                     0);
 
-            runningStatsListView = (ListView) findViewById(R.id.runningStatsListView);
+            runningStatsListView = findViewById(R.id.runningStatsListView);
             runningStatsListView.setAdapter(dataAdapter);
-            c.close(); // that's important too, otherwise you're gonna leak cursors
-            c_2.close(); // that's important too, otherwise you're gonna leak cursors
-
+            Log.d(TAG, "VIEW " + runningStatsListView.getItemAtPosition(0
+            ));
 
         } catch (Exception e) {
             Log.d(EXCEPTION_TAG, e.toString());
         }
-
-
-
     }
 
 

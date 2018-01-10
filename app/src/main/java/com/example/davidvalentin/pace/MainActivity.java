@@ -257,8 +257,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Stopping and Resetting Service Binder");
             // Stop the service binder
             mRunningServiceBinder.restart();
-//            mRunningServiceBinder.getRunningTrackerService().setmLocationListener(null);
-//            mRunningServiceBinder.getRunningTrackerService().setmLocationManager(null);
         }
 
     }
@@ -273,34 +271,11 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickSaveTime");
         saveBtn = findViewById(R.id.saveBtn);
         mUtilityLibrary.onClickChangeBtnColor(saveBtn);
-
         // Ask the user if they are sure they want to save empty values to the database
         if (mUtilityLibrary.checkForDefaultTextValues(distanceText, timerText)) {
             // Src: https://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
-            DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    switch (which){
-                        case DialogInterface.BUTTON_POSITIVE:
-                            //Yes button clicked
-                            dialog.dismiss();
-                            mRunningServiceBinder.save();
-                            saveData();
-                            break;
-
-                        case DialogInterface.BUTTON_NEGATIVE:
-                            //No button clicked
-                            dialog.dismiss();
-                            break;
-                    }
-                }
-            };
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setMessage("Are you sure you would like to save empty run data?")
-                    .setPositiveButton("Yes", dialogClickListener)
-                    .setNegativeButton("No", dialogClickListener)
-                    .show();
+            AlertDialog.Builder check = createAlertDialog();
+            check.show();
         } else {
             mRunningServiceBinder.save();
             saveData();
@@ -487,6 +462,37 @@ public class MainActivity extends AppCompatActivity {
             Toast alertToast = mUtilityLibrary.createToast("Could not save your data", Toast.LENGTH_LONG);
             alertToast.show();
         }
+    }
+
+    /**
+     *
+     * @return AlertDialog.Builder
+     */
+    public AlertDialog.Builder createAlertDialog() {
+        DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which){
+                    case DialogInterface.BUTTON_POSITIVE:
+                        //Yes button clicked
+                        dialog.dismiss();
+                        mRunningServiceBinder.save();
+                        saveData();
+                        break;
+
+                    case DialogInterface.BUTTON_NEGATIVE:
+                        //No button clicked
+                        dialog.dismiss();
+                        break;
+                }
+            }
+        };
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Are you sure you would like to save empty run data?")
+                .setPositiveButton("Yes", dialogClickListener)
+                .setNegativeButton("No", dialogClickListener);
+        return builder;
     }
 
 

@@ -8,4 +8,7 @@
     <string name="progress">Progress</string>
     <string name="save_run_data_button">Save run data button</string>
     <string name="profile_button">Profile button</string>
+    <string name="time">Time</string>
+    <string name="kph">Kilometers</string>
+    <string name="date">Date of Run</string>
 </resources>

@@ -67,6 +67,39 @@ public class ProfileViewController extends AppCompatActivity {
         paceGraph.addSeries(series);
     }
 
+    public LineGraphSeries<DataPoint> createLineGraphSeries() {
+        Log.d(TAG, "createLineGraphSeries");
+
+        String[] projection = new String[] {
+                PaceProviderContract._ID,
+                PaceProviderContract.TOTAL_KILOMETERS_RAN,
+                PaceProviderContract.TOTAL_HOURS,
+                PaceProviderContract.KILOMETERS_PER_HOUR,
+                PaceProviderContract.DATE,
+        };
+
+        Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
+
+        ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
+        ContentValues map;
+        if(c.moveToFirst()) {
+            do {
+                map = new ContentValues();
+                // gets the content
+                DatabaseUtils.cursorRowToContentValues(c, map);
+                retVal.add(map);
+            } while(c.moveToNext());
+        }
+        c.close();
+        // Can iterate through the content values list and then just pop each value in based off the date object and organize it like that
+//        for (int i = 0; i < retVal.size(); i++) {
+//            map.get()
+//        }
+//
+
+        return null;
+    }
+
     /**
     *   onResume()
     *       1. Reinitializes the cursor object and queries the database
@@ -154,18 +187,6 @@ public class ProfileViewController extends AppCompatActivity {
             };
 
             Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
-
-
-            UtilityLibrary mUtilityLibrary = new UtilityLibrary(this);
-//            mUtilityLibrary.logCursorContents(c);
-
-//            ArrayList<ContentValues> myData = mUtiliLibrary.returnCursorContents(c);
-//            Set<String> keySet = myData.get(1).keySet();
-//
-//            for (int i = 0; i < myData.size()-1; i++) {
-//                Log.d(TAG, "MyData: " + myData.get(i));
-//                Log.d(TAG, "Keys: " + keySet.toString());
-//            }
 
             dataAdapter = new SimpleCursorAdapter(
                     this,

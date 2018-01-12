@@ -1,6 +1,7 @@
 package com.example.davidvalentin.pace;
 
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -37,7 +38,13 @@ public class MainActivity extends AppCompatActivity {
     private static final int CHANNEL_ID = 1;
     private static final String DEFAULT_TIME_TEXT = "0:00";
     private static final String DEFAULT_DISTANCE_TEXT = "0.00";
+    private static final String NOTIF_TIME_TEXT = "LAST TIME RECORDED: ";
+    private static final String NOTIF_DISTANCE_TEXT = "LAST DISTANCE RECORDED: ";
 
+    private String[] NOTIF_RESPONSES = new String[]{
+        "Continue Running?",
+        "Click to check your new time and distance!"
+    };
 
     // Service Components and Threads
     private RunningTrackerService.RunningServiceBinder mRunningServiceBinder = null;
@@ -47,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isTimerRunning = false; // Checks is the timerHandler is running
     private Timer timer; // Timer object that keeps track of time
     private int elapsedTime = 0; // THe amount of time that has passed since playBtn was clicked
-    private Boolean playOrPause = false; // Bool that checks whether we are playing or pausing
+    private Boolean playOrPause = false; // Bool that checks whether we are playirng or pausing
     private Float distanceRan;
     private DBHelper dbHelper = null;
 
@@ -59,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton profileBtn;
     private TextView distanceText;
     private TextView timerText;
-    private NotificationCompat.Builder mNotification;
+    private Notification.Builder mNotification;
     private NotificationManager mNotificationManager;
     
     // Helper Class:
@@ -90,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set the values to zero
         distanceRan = new Float(0);
+        dbHelper = new DBHelper(this);
     }
 
 
@@ -122,17 +130,47 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onPause");
         super.onPause();
 
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
+        } else if (mRunningServiceBinder.isRunnerRunning() == false) {
+            createDistanceAndTimeNotif(NOTIF_RESPONSES[0], CHANNEL_ID);
+
+        }
+    }
+
+    /**
+     *  onPause creates a notification and creates a notification to resume the activity
+     *  and the service will continue to run
+     *
+     * */
+    @Override
+    public void onStop() {
+        Log.d(TAG, "onResume");
+        super.onStop();
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
+        }
+    }
+
+    /**
+     *  Creates a notification that displays the last recorded distance and time
+     *
+     */
+    private void createDistanceAndTimeNotif(String msg, int CHANNEL_ID) {
+        Log.d(TAG, "createDistanceAndTimeNotif");
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
         mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // If the service is still running => Create a notification to the user of their last recorded distance and time
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            mNotification = mUtilityLibrary.createNotification(msg, getResources().getString(R.string.app_name),
+                    null
+                    , pIntent);
+            mNotification.setStyle(new Notification.BigTextStyle())
+                        .setStyle(new Notification.BigTextStyle()
+                                .bigText(String.format("%s %s\n%s %s", NOTIF_DISTANCE_TEXT, mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()), NOTIF_TIME_TEXT, timeFormat(getElapsedTime()))));
 
-        // IF the service is running that is analogous that the runner is running => Check Distance?
-        // Else => Create a notification to Continue Run?
-        if (!mRunningServiceBinder.isRunnerRunning()) {
-            mNotification = mUtilityLibrary.createNotification("Running", getResources().getString(R.string.app_name), "Current Distance: " + mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()), pIntent);
-            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
-        } else {
-            mNotification = mUtilityLibrary.createNotification("Not Running", getResources().getString(R.string.app_name), "Continue Run?", pIntent);
-            NotificationCompat.Builder mNotification = mUtilityLibrary.createNotification("Still Running", "Talaria", "Check Distance", pIntent);
+
+            // Get the channel Id
             mNotificationManager.notify(CHANNEL_ID, mNotification.build());
         }
     }
@@ -179,12 +217,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG, "callback Running");
-                    setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
-                    // Updates the text of the timer
-                    distanceText = findViewById(R.id.distanceText);
-                    Log.d(TAG, "Current Distance: " + currentDistance);
-                    distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(currentDistance)));
+                    if (mRunningServiceBinder.isRunnerRunning()) {
+                        Log.d(TAG, "callback Running");
+                        setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
+                        // Updates the text of the timer
+                        distanceText = findViewById(R.id.distanceText);
+                        Log.d(TAG, "Current Distance: " + currentDistance);
+                        distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(currentDistance)));
+                    }
                 }
             });
         }
@@ -205,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  Creates/starts the service and the timer and updates the UI Textviews
+     *  Creates/starts the service and the timer and updates the UI TextViews
      *
      *  @param view This is the view context of the current button
      *
@@ -220,7 +260,10 @@ public class MainActivity extends AppCompatActivity {
             mRunningServiceBinder.run();
         } else if (!mRunningServiceBinder.isRunnerRunning()) {
             mRunningServiceBinder.run();
-            Log.d(TAG, "It is not running");
+        } else if (serviceConnection != null) {
+            Log.d(TAG, "Callback is dead");
+            this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+            this.startService(new Intent(this, RunningTrackerService.class));
         }
     }
 
@@ -249,12 +292,18 @@ public class MainActivity extends AppCompatActivity {
     public void onClickRestart(View view) {
         Log.d(TAG, "onClickRestart");
         mUtilityLibrary.onClickChangeBtnColor(restartBtn);
-        killTimer();
-        // Stop the service from continue tracking
-        if (mRunningServiceBinder != null) {
-            Log.d(TAG, "Stopping and Resetting Service Binder");
-            // Stop the service binder
-            mRunningServiceBinder.restart();
+        // Make sure that the timer object isn't null
+        if (timer != null) {
+            killTimer();
+            // Stop the service from continue tracking
+            if (mRunningServiceBinder != null) {
+                Log.d(TAG, "Stopping and Resetting Service Binder");
+                // Stop the service binder
+                mRunningServiceBinder.restart();
+            }
+        } else {
+            Toast alertToast = mUtilityLibrary.createToast("Timer is already set to zero!", Toast.LENGTH_LONG);
+            alertToast.show();
         }
 
     }
@@ -303,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  The handler class which updates the textview of the timerText
+     *  The handler class which updates the TextView of the timerText
      *
      * */
     private static class TimerHandler extends Handler {
@@ -371,22 +420,27 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "killTimer");
 
         if (!isTimerRunning()) {
-            Log.d(TAG, "Killed Timer");
             timer.purge();
             timer.cancel();
+            Log.d(TAG, "Timer killed");
+            resetTextViewsAndRestartBinder();
             setElapsedTime(0);
-            mRunningServiceBinder.restart();
-            // Reset the Text Views
-            distanceText = findViewById(R.id.distanceText);
-            distanceText.setText(DEFAULT_DISTANCE_TEXT);
-            timerText = findViewById(R.id.timerText);
-            timerText.setText(DEFAULT_TIME_TEXT);
+            setDistanceRan(0f);
         } else { // Timer is running => Tell the user to stop the timer first
             Toast alertToast = mUtilityLibrary.createToast("Timer must be paused before restarting.", 1);
             alertToast.show();
         }
     }
 
+    private void resetTextViewsAndRestartBinder() {
+        Log.d(TAG, "resetTextViewsAndRestartBinder");
+        distanceText = findViewById(R.id.distanceText);
+        timerText = findViewById(R.id.timerText);
+        // Reset the Text Views
+        distanceText.setText(String.valueOf(DEFAULT_DISTANCE_TEXT));
+        timerText.setText(String.valueOf(DEFAULT_TIME_TEXT));
+        mRunningServiceBinder.restart();
+    }
 
     /**
     *  pauseTimer re-enables the startBtn component and isTimerRunning to false
@@ -438,11 +492,12 @@ public class MainActivity extends AppCompatActivity {
      */
     public void saveData() {
         Log.d(TAG, "saveData");
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        Double totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
-        Float totalTime = mUtilityLibrary.convertSecondsToHours(this.getElapsedTime());
-        Double speed = totalDistanceRan/totalTime;
         try {
+            SQLiteDatabase db = dbHelper.getWritableDatabase();
+            Double totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
+            Float totalTime = mUtilityLibrary.convertSecondsToHours(this.getElapsedTime());
+            Double speed = totalDistanceRan/totalTime;
+
             Log.d(TAG, "Total Distance Ran: " + totalDistanceRan.toString() + "\n" +
                             "Total Time: " + totalTime.toString() + '\n' +
                             "Speed: " + speed.toString()
@@ -515,11 +570,6 @@ public class MainActivity extends AppCompatActivity {
     *
     * */
 
-
-    public CallbackInterface getCallback() {
-        return callback;
-    }
-
     public boolean isTimerRunning() {
         return isTimerRunning;
     }
@@ -550,6 +600,6 @@ public class MainActivity extends AppCompatActivity {
         this.distanceRan = distanceRan;
     }
 
-
+    public static int getChannelId() {return CHANNEL_ID;}
 
 }

@@ -86,9 +86,10 @@ public class Runner {
         if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
             Log.d(TAG, "run");
             this.state = RunnerState.RUNNING;
-        } else {
+        // Made a separate if else to know when we are in the restarted state
+        } else if (this.state == RunnerState.RESTARTED) {
+            Log.d(TAG, "RESTARTED => RUNNING");
             this.state = RunnerState.RUNNING;
-            Log.d(TAG, "NONE OF THESE STATES");
         }
     }
 

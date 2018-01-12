@@ -1,6 +1,7 @@
 package com.example.davidvalentin.pace;
 
 import android.app.ActivityManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -31,7 +32,6 @@ public class RunningTrackerService extends Service {
     // Member variables
     private static final String TAG = "RunningTrackerService";
     private static final String EXCEPTION_TAG = "ERROR IN RTService";
-
     private static final int CHANNEL_ID = 0;
 
     // Callback for the thread
@@ -43,7 +43,7 @@ public class RunningTrackerService extends Service {
 
     // Member Variables to resume the service
     private NotificationManager mNotificationManager;
-    private NotificationCompat.Builder mNotification;
+    private Notification.Builder mNotification;
 
     //Utility Library:
     private UtilityLibrary mUtilityLibrary;
@@ -64,13 +64,12 @@ public class RunningTrackerService extends Service {
         mUtilityLibrary = new UtilityLibrary(this.getApplicationContext()); // Utility Library Instantiation
         // Created the notification
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
-        mNotification = mUtilityLibrary.createNotification("Talaria", mUtilityLibrary.getApplicationName(), "Running", pIntent);
+        mNotification = mUtilityLibrary.createNotification(getResources().getString(R.string.app_name), mUtilityLibrary.getApplicationName(), "Running", pIntent);
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(CHANNEL_ID, mNotification.build());
 
         runner = new Runner(this); // Instantiate the new runner object
         mRunnerThread = new RunnerThread(); // Instantiate the runner thread
-//        this.run();
     }
 
     /**
@@ -138,8 +137,9 @@ public class RunningTrackerService extends Service {
     }
 
     public void restart() {
-        Log.d(TAG, "save");
-        mRunnerThread.setThreadRunning(false);
+        Log.d(TAG, "restart");
+        resetDistances();
+//        mRunnerThread.setThreadRunning(false); - Already should be not-running since its paused
         runner.restart();
     }
 
@@ -164,6 +164,12 @@ public class RunningTrackerService extends Service {
         Log.d(TAG, "pause");
 //        mRunnerThread.setThreadRunning(false);
         runner.pause();
+    }
+
+    public void resetDistances() {
+        Log.d(TAG, "resetDistances");
+        mRunnerThread.setCurrentDistanceTravelled(0f);
+        mRunnerThread.setTotalDistanceRan(0f);
     }
 
     /**
@@ -199,9 +205,6 @@ public class RunningTrackerService extends Service {
         } else if (runner.getState() == Runner.RunnerState.SAVED) {
             Log.d(TAG, "SAVED");
             return false;
-        } else if (runner.getState() == Runner.RunnerState.RESTARTED) {
-            Log.d(TAG, "RESTARTED");
-            return false;
         } else {
             Log.d(TAG, "ANOMALY: " + runner.getState().toString());
             return false;
@@ -231,6 +234,8 @@ public class RunningTrackerService extends Service {
         this.mRunnerThread = mRunnerThread;
     }
 
+    public static int getServiceChannelId() {return CHANNEL_ID;}
+
     /**
      *  Thread Class that keeps track of the location of the user
      *
@@ -254,14 +259,9 @@ public class RunningTrackerService extends Service {
         public RunnerThread() {
             // Starts the thread
             Log.d(TAG, "runnerThread created");
-
-            // Instantiate and set up the RunnerThreads variables
-
-
-//            // Reset the values when first instantiated
-//            setCurrentDistanceTravelled(0);
-//            setTotalDistanceRan(0);
-
+            // Reset the values when first instantiated
+            setCurrentDistanceTravelled(0);
+            setTotalDistanceRan(0);
             // Access it regardless
             try {
                 locationManager =
@@ -307,7 +307,6 @@ public class RunningTrackerService extends Service {
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
                         Log.d(EXCEPTION_TAG, "Error: " + e.toString());
-                        // Get the current distance ran here => log the long variable and use the api to track the
                     }
                     // Update the time and call the method doCallbacks => will get the broadcast item
                     doCallbacks(totalDistanceRan);
@@ -326,6 +325,7 @@ public class RunningTrackerService extends Service {
         }
 
         private void setThreadRunning(boolean threadRunning) {
+            Log.d(TAG, "IS RUNNER THREAD RUNNING: " + threadRunning);
             this.threadRunning = threadRunning;
         }
 
@@ -338,7 +338,6 @@ public class RunningTrackerService extends Service {
         }
 
         private void setTotalDistanceRan(float totalDistanceRan) {this.totalDistanceRan = totalDistanceRan;}
-
 
         public float getSpeed() {return speed;}
 
@@ -418,5 +417,8 @@ public class RunningTrackerService extends Service {
             // Return this instance of LocalService so clients can call public methods
             return RunningTrackerService.this;
         }
+
+        public int getServiceChannelId() {return RunningTrackerService.this.getServiceChannelId();}
+
     }
 }

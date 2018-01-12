@@ -5,6 +5,7 @@ package com.example.davidvalentin.pace;
  */
 
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
@@ -61,15 +62,13 @@ public class UtilityLibrary {
      * @return Notification the notification object
      *
      * */
-    public NotificationCompat.Builder createNotification(String msg, String title, String contentText, PendingIntent pendingIntent) {
+    public Notification.Builder createNotification(String msg, String title, String contentText, PendingIntent pendingIntent) {
         Log.d(TAG, "createNotification");
         int color = context.getResources().getColor(R.color.colorPrimary);
-        NotificationCompat.Builder notification =
-                new NotificationCompat.Builder(context)
+        Notification.Builder notification =
+                new Notification.Builder(context)
                         .setSmallIcon(R.drawable.pace_logo_96)
                         .setContentIntent(pendingIntent)
-                        .setColorized(true)
-                        .setColor(color)
                         .setContentTitle(ApplicationName)
                         .setContentText(contentText);
         return notification;

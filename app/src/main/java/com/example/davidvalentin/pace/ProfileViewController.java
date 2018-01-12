@@ -4,36 +4,26 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-import android.net.Uri;
-import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 
-import com.example.database.backend.DBHelper;
 import com.example.database.backend.PaceProviderContract;
 import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.LegendRenderer;
 import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
-import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.jjoe64.graphview.series.Series;
 
-import java.net.URI;
-import java.security.Key;
-import java.text.DateFormat;
-import java.text.ParseException;
+import org.w3c.dom.Text;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -52,10 +42,13 @@ public class ProfileViewController extends AppCompatActivity {
     //XML COMPONENTS
     private ListView runningStatsListView;
     private GraphView paceGraph;
+    private TextView graphHeaderText;
+    private TextView userDataHeaderText;
 
     // Private Member Variables
     private SimpleCursorAdapter dataAdapter;
-    private UtilityLibrary mUtilityLibrary;
+    private SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-dd-mm hh:mm:ss");
+
 
     // Database values - Kept reusing them
     private String[] DEFAULT_PROJECTION = new String[] {
@@ -85,13 +78,13 @@ public class ProfileViewController extends AppCompatActivity {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_view);
-        this.mUtilityLibrary = new UtilityLibrary(this);
-        // Populating with straight data.
-        queryContentProvider();
+        queryContentProvider(); // Populating the listview with data
 
         try {
             createLineGraphSeries();
         } catch (Exception e) {
+            TextView noDataText = findViewById(R.id.noDataTextView);
+            noDataText.setVisibility(View.VISIBLE);
             Log.d(EXCEPTION_TAG, "No data to display: " + e.toString());
         }
     }
@@ -139,43 +132,32 @@ public class ProfileViewController extends AppCompatActivity {
     public void createLineGraphSeries() {
         Log.d(TAG, "createLineGraphSeries");
 
-        // Get any values from the database
-        ArrayList<ContentValues> retVal = retrieveAndStoreContentValues(DEFAULT_PROJECTION);
-        // ArrayList
-
-
-//        Calendar calendar = Calendar.getInstance();
-//        Date d1 = calendar.getTime();
-//        calendar.add(Calendar.DATE, 1);
-//        Date d2 = calendar.getTime();
-//        calendar.add(Calendar.DATE, 1);
-//        Date d3 = calendar.getTime();
-
         paceGraph = findViewById(R.id.paceGraph);
-//        DataPoint[] list = generateDataPoints();
-//        Log.d(TAG, "X: " + list[0].getX());
-
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateDataPoints());
-        paceGraph.addSeries(series);
-
-        // set date label formatter
-        paceGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity()));
-        paceGraph.getGridLabelRenderer().setNumHorizontalLabels(3); // only 4 because of the space
-
         try {
 
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-dd-mm");
+            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(generateDataPoints());
+            series = setProperties(series);
+            paceGraph.addSeries(series);
 
-            ArrayList<String> date = getSpecificColumnValuesForFloatsForDate(PaceProviderContract.DATE);
+            ArrayList<String> date = getSpecificColumnValuesForDate(PaceProviderContract.DATE);
+            paceGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity()));
+            paceGraph.getGridLabelRenderer().setNumHorizontalLabels(date.size());
 
-            paceGraph.getViewport().setMinX(df.parse(date.get(0)).getTime());
-            paceGraph.getViewport().setMaxX(df.parse(date.get(date.size()-1)).getTime());
-            paceGraph.getViewport().setXAxisBoundsManual(true);
+            paceGraph.getViewport().setMinX(DEFAULT_DATE_FORMAT.parse(date.get(0)).getTime());
+            paceGraph.getViewport().setMaxX(DEFAULT_DATE_FORMAT.parse(date.get(date.size()-1)).getTime());
         } catch (Exception e) {
             Log.d(EXCEPTION_TAG, e.toString());
         }
 
 
+    }
+
+    private LineGraphSeries setProperties(LineGraphSeries series) {
+        series.setTitle("Running Data");
+        series.setDrawDataPoints(true);
+        series.setDataPointsRadius(10);
+        series.setDataPointsRadius(10);
+        return series;
     }
 
     /**
@@ -188,15 +170,13 @@ public class ProfileViewController extends AppCompatActivity {
 
         ArrayList<ContentValues> retVal = retrieveAndStoreContentValues(DEFAULT_PROJECTION);// ArrayList
         ArrayList<Float> total_kilometers_ran = getSpecificColumnValuesForFloats(PaceProviderContract.TOTAL_KILOMETERS_RAN);
-        ArrayList<String> date = getSpecificColumnValuesForFloatsForDate(PaceProviderContract.DATE);
+        ArrayList<String> date = getSpecificColumnValuesForDate(PaceProviderContract.DATE);
         DataPoint[] values = new DataPoint[retVal.size()];
-
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-dd-mm");
 
 
         try {
             for (int i=0; i<total_kilometers_ran.size(); i++) {
-                Date x = df.parse(date.get(i));
+                Date x = DEFAULT_DATE_FORMAT.parse(date.get(i));
                 Float y = total_kilometers_ran.get(i);
                 DataPoint v = new DataPoint(x, y);
                 values[i] = v;
@@ -204,7 +184,6 @@ public class ProfileViewController extends AppCompatActivity {
         } catch (Exception e) {
             Log.d(EXCEPTION_TAG, e.toString());
         }
-
         return values;
     }
 
@@ -215,8 +194,8 @@ public class ProfileViewController extends AppCompatActivity {
      * @param columnName - the columnName of values that we are searching for
      * @return
      */
-    private ArrayList<String> getSpecificColumnValuesForFloatsForDate(String columnName) {
-        Log.d(TAG, "getSpecificColumnValuesForFloatsForDate");
+    private ArrayList<String> getSpecificColumnValuesForDate(String columnName) {
+        Log.d(TAG, "getSpecificColumnValuesForDate");
         ArrayList<ContentValues> retVal = retrieveAndStoreContentValues(DEFAULT_PROJECTION);
         ArrayList<String> retrievedValues = new ArrayList<String>();
         // declare an array of all the available dates - get up only the most recent 7 days. display those days
@@ -231,28 +210,6 @@ public class ProfileViewController extends AppCompatActivity {
         }
         return retrievedValues;
     }
-
-//    private ArrayList<Date> test(String columnName) throws ParseException {
-//        Log.d(TAG, "getSpecificColumnValuesForFloatsForDate");
-//        ArrayList<ContentValues> retVal = retrieveAndStoreContentValues(DEFAULT_PROJECTION);
-//        ArrayList<Date> retrievedValues = new ArrayList<Date>();
-//
-//        SimpleDateFormat df = new SimpleDateFormat("yyyy-dd-mm");
-//
-//        // declare an array of all the available dates - get up only the most recent 7 days. display those days
-//        for (int i = 0; i < retVal.size(); i++) {
-//            for (int j = 0; j < DEFAULT_PROJECTION.length; j++) {
-//                if (DEFAULT_PROJECTION[j] == columnName) {
-//                    Log.d(TAG, " " + columnName + ":" + retVal.get(i).get(DEFAULT_PROJECTION[j]));
-//                    Date d = df.parse(retVal.get(i).get(DEFAULT_PROJECTION[j]).toString());
-//                    retrievedValues.add(d);
-//                }
-//            }
-//        }
-//        return retrievedValues;
-//    }
-
-
 
     /**
      * Creates and returns an ArrayList of values of the specific column name

@@ -70,7 +70,7 @@ public class RunningTrackerService extends Service {
 
         runner = new Runner(this); // Instantiate the new runner object
         mRunnerThread = new RunnerThread(); // Instantiate the runner thread
-        this.run();
+//        this.run();
     }
 
     /**
@@ -123,15 +123,6 @@ public class RunningTrackerService extends Service {
         Log.d(TAG, "run");
         runner.run();
         mRunnerThread.setThreadRunning(true);
-        if (mRunnerThread != null) {
-            Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
-            mRunnerThread.setThreadRunning(true);
-        }
-        else {
-            Log.d(TAG, "RUNNER THREAD IS NULL");
-            mRunnerThread = new RunnerThread();
-            mRunnerThread.setThreadRunning(true);
-        }
     }
 
     /**
@@ -171,7 +162,7 @@ public class RunningTrackerService extends Service {
      * */
     public void pause() {
         Log.d(TAG, "pause");
-        mRunnerThread.setThreadRunning(false);
+//        mRunnerThread.setThreadRunning(false);
         runner.pause();
     }
 
@@ -316,16 +307,11 @@ public class RunningTrackerService extends Service {
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
                         Log.d(EXCEPTION_TAG, "Error: " + e.toString());
-
                         // Get the current distance ran here => log the long variable and use the api to track the
                     }
                     // Update the time and call the method doCallbacks => will get the broadcast item
                     doCallbacks(totalDistanceRan);
-                } else {
-
-                    Log.d(TAG, "RUNNER STATE: " + runner.getState());
                 }
-
             }
         }
 
@@ -426,6 +412,11 @@ public class RunningTrackerService extends Service {
 
         public void setmRunnerThread(RunnerThread mRunnerThread) {
             RunningTrackerService.this.setmRunnerThread(mRunnerThread);
+        }
+
+        RunningTrackerService getService() {
+            // Return this instance of LocalService so clients can call public methods
+            return RunningTrackerService.this;
         }
     }
 }

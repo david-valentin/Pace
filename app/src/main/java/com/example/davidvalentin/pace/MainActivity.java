@@ -2,6 +2,7 @@ package com.example.davidvalentin.pace;
 
 import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Service Components and Threads
-    private RunningTrackerService.RunningServiceBinder mRunningServiceBinder;
+    private RunningTrackerService.RunningServiceBinder mRunningServiceBinder = null;
     private final TimerHandler mTimerHandler = new TimerHandler(this);
 
     // Member Variables
@@ -64,7 +65,6 @@ public class MainActivity extends AppCompatActivity {
     // Helper Class:
     private UtilityLibrary mUtilityLibrary;
 
-
     /**
      * starts the service and binds the service to the current Context
      *
@@ -88,12 +88,8 @@ public class MainActivity extends AppCompatActivity {
         distanceText = findViewById(R.id.distanceText);
         timerText = findViewById(R.id.timerText);
 
-        // Disabled the button
-        // restartBtn.setEnabled(false);
-
         // Set the values to zero
         distanceRan = new Float(0);
-        this.dbHelper = new DBHelper(this);
     }
 
 
@@ -126,19 +122,19 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onPause");
         super.onPause();
 
-//        PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
-//        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-//
-//        // IF the service is running that is analogous that the runner is running => Check Distance?
-//        // Else => Create a notification to Continue Run?
-//        if (mRunningServiceBinder.isServiceRunning()) {
-//            mNotification = mUtilityLibrary.createNotification("Running", "Talaria", "Current Distance: " + mUtilityLibrary.convertMetersToKilometersSting(getDistanceRan()), pIntent);
-//            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
-//        } else {
-//            mNotification = mUtilityLibrary.createNotification("Not Running", "Talaria", "Continue Run?", pIntent);
-//            NotificationCompat.Builder mNotification = mUtilityLibrary.createNotification("Still Running", "Talaria", "Check Distance", pIntent);
-//            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
-//        }
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        // IF the service is running that is analogous that the runner is running => Check Distance?
+        // Else => Create a notification to Continue Run?
+        if (!mRunningServiceBinder.isRunnerRunning()) {
+            mNotification = mUtilityLibrary.createNotification("Running", getResources().getString(R.string.app_name), "Current Distance: " + mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()), pIntent);
+            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
+        } else {
+            mNotification = mUtilityLibrary.createNotification("Not Running", getResources().getString(R.string.app_name), "Continue Run?", pIntent);
+            NotificationCompat.Builder mNotification = mUtilityLibrary.createNotification("Still Running", "Talaria", "Check Distance", pIntent);
+            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
+        }
     }
 
     /**
@@ -218,11 +214,13 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onClickStartTimer");
         mUtilityLibrary.onClickChangeBtnColor(startBtn);
         startTimer();
-
+        mRunningServiceBinder.run();
         if (mRunningServiceBinder == null) {
-            bindAndStartService();
-        } else if (this.getCallback() == null) {
-            Log.d(TAG, "It is null");
+            startMyService();
+            mRunningServiceBinder.run();
+        } else if (!mRunningServiceBinder.isRunnerRunning()) {
+            mRunningServiceBinder.run();
+            Log.d(TAG, "It is not running");
         }
     }
 
@@ -398,7 +396,7 @@ public class MainActivity extends AppCompatActivity {
     private void pauseTimer() {
         Log.d(TAG, "pauseTimer");
         if (isTimerRunning()) {
-            Log.d(TAG, "Timer Stopped");
+            Log.d(TAG, "Timer paused");
             setTimerRunning(false);
         } else {
             Log.d(TAG, "Timer Running");
@@ -495,14 +493,19 @@ public class MainActivity extends AppCompatActivity {
         return builder;
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
 
     /**
      *  Binds and starts the service to the main activity
      * */
-    public void bindAndStartService() {
-        Log.d(TAG, "bindAndStartService");
+    public void startMyService() {
+        Log.d(TAG, "startMyService");
         this.startService(new Intent(this, RunningTrackerService.class));
-        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
 

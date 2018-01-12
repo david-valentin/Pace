@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Set the values to zero
         distanceRan = new Float(0);
-        dbHelper = new DBHelper(this);
+        this.dbHelper = new DBHelper(this);
     }
 
 
@@ -188,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
                     // Updates the text of the timer
                     distanceText = findViewById(R.id.distanceText);
                     Log.d(TAG, "Current Distance: " + currentDistance);
-                    distanceText.setText(mUtilityLibrary.convertMetersToKilometersString(currentDistance));
+                    distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(currentDistance)));
                 }
             });
         }

@@ -37,6 +37,10 @@ public class RunningTrackerService extends Service {
     // Callback for the thread
     RemoteCallbackList<RunningServiceBinder> remoteCallbackList = new RemoteCallbackList<RunningServiceBinder>();
 
+    //Location Variables:
+    private LocationManager locationManager;
+    private MyLocationListener locationListener;
+
     // Member Variables to resume the service
     private NotificationManager mNotificationManager;
     private NotificationCompat.Builder mNotification;
@@ -47,8 +51,6 @@ public class RunningTrackerService extends Service {
     // Logical Member variables
     private RunnerThread mRunnerThread;
     private Runner runner;
-    private LocationManager mLocationManager;
-    private LocationListener mLocationListener;
 
     /**
      * Creates the activity and creates the runner thread which
@@ -124,7 +126,8 @@ public class RunningTrackerService extends Service {
         if (mRunnerThread != null) {
             Log.d(TAG, "STARTING THE SERVICE INTENT IN RUN");
             mRunnerThread.setThreadRunning(true);
-        } else {
+        }
+        else {
             Log.d(TAG, "RUNNER THREAD IS NULL");
             mRunnerThread = new RunnerThread();
             mRunnerThread.setThreadRunning(true);
@@ -158,8 +161,6 @@ public class RunningTrackerService extends Service {
         Log.d(TAG, "stop");
         mRunnerThread.setThreadRunning(false);
         runner.stop();
-        setmLocationManager(null);
-        setmLocationListener(null);
     }
 
     /**
@@ -211,7 +212,7 @@ public class RunningTrackerService extends Service {
             Log.d(TAG, "RESTARTED");
             return false;
         } else {
-            Log.d(TAG, "ANONAMALY: " + runner.getState().toString());
+            Log.d(TAG, "ANOMALY: " + runner.getState().toString());
             return false;
         }
     }
@@ -225,23 +226,6 @@ public class RunningTrackerService extends Service {
 
     public Runner getRunner() {
         return this.runner;
-    }
-
-    public LocationManager getmLocationManager() {
-        return this.mLocationManager;
-    }
-
-
-    public LocationListener getmLocationListener() {
-        return this.mLocationListener;
-    }
-
-    public void setmLocationManager(LocationManager mLocationManager) {
-        this.mLocationManager = mLocationManager;
-    }
-
-    public void setmLocationListener(LocationListener mLocationListener) {
-        this.mLocationListener = mLocationListener;
     }
 
     public RunningTrackerService getRunningTrackerService() {
@@ -269,10 +253,10 @@ public class RunningTrackerService extends Service {
         private boolean threadRunning = true;
 
         // Keeps track of the difference in distance
-        private float currentDistanceTravelled = 0;
+        private float currentDistanceTravelled ;
 
         // Keeps track of the total distance travelled
-        private float totalDistanceRan = 0;
+        private float totalDistanceRan;
 
         private float speed = 0;
 
@@ -281,23 +265,24 @@ public class RunningTrackerService extends Service {
             Log.d(TAG, "runnerThread created");
 
             // Instantiate and set up the RunnerThreads variables
-            mLocationManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
-            mLocationListener = new MyLocationListener();
 
-            // Reset the values when first instantiated
-            setCurrentDistanceTravelled(0);
-            setTotalDistanceRan(0);
+
+//            // Reset the values when first instantiated
+//            setCurrentDistanceTravelled(0);
+//            setTotalDistanceRan(0);
 
             // Access it regardless
             try {
-                // Set the start location as the initial location
-                runner.setStartLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
-                mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                locationManager =
+                        (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+                locationListener = new MyLocationListener();
+
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
                         5, // minimum time interval between updates
                         5, // minimum distance between updates, in metres
-                        mLocationListener);
-                Log.d(TAG, "Start Location is: " + runner.getStartLocation());
-            } catch (SecurityException e) {
+                        locationListener);
+                runner.setStartLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
+            } catch(SecurityException e) {
                 Log.d(EXCEPTION_TAG, e.toString());
             }
 
@@ -317,22 +302,16 @@ public class RunningTrackerService extends Service {
                 if (runner.getState() == Runner.RunnerState.RUNNING) {
                     try {Thread.sleep(1000);} catch (Exception e) {Log.d(EXCEPTION_TAG, "Error Message: " + e.toString());}
                     try {
-                        // Set the intermediary location as this the last known location
-                        runner.setIntermediaryLocation(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER));
 
-                        // currentDistanceTravelled is the distance from the getIntermediaryLocation() + and the start
-                        currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation());
+                        runner.setIntermediaryLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)); // Update the intermediary location as the most recent location
 
-//                        setCurrentDistanceTravelled(getRunner().getIntermediaryLocation().distanceTo(getRunner().getStartLocation()));
+                        currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation()); // get the distance between the two points
 
-                        // Set the new start location as the intermediary location => Allows us to accurately capture the totalDistanceRan
-                        runner.setStartLocation(runner.getIntermediaryLocation());
+                        runner.setStartLocation(runner.getIntermediaryLocation()); // Set the new start location as the intermediary location => Allows us to accurately capture the totalDistanceRan
 
-                         setSpeed(mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getSpeed());
+                        setSpeed(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getSpeed()); // Get the speed from the last location
 
-                        // Add that distance to the total distance
-                        totalDistanceRan += currentDistanceTravelled;
-
+                        totalDistanceRan += currentDistanceTravelled; // Add that distance to the total distance
 
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
@@ -364,9 +343,7 @@ public class RunningTrackerService extends Service {
             this.threadRunning = threadRunning;
         }
 
-        public float getCurrentDistanceTravelled() {
-            return currentDistanceTravelled;
-        }
+        public float getCurrentDistanceTravelled() {return currentDistanceTravelled;}
 
         public void setCurrentDistanceTravelled(float currentDistanceTravelled) {this.currentDistanceTravelled = currentDistanceTravelled;}
 
@@ -375,6 +352,7 @@ public class RunningTrackerService extends Service {
         }
 
         private void setTotalDistanceRan(float totalDistanceRan) {this.totalDistanceRan = totalDistanceRan;}
+
 
         public float getSpeed() {return speed;}
 

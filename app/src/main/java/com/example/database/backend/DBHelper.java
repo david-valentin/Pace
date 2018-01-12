@@ -49,8 +49,14 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(String.format("CREATE TABLE %s (_id INTEGER PRIMARY KEY AUTOINCREMENT ,%s REAL NOT NULL,%s REAL NOT NULL,%s REAL NOT NULL,date DEFAULT (datetime('now','localtime')));",
-                TABLE_NAME, TOTAL_KILOMETERS_RAN, TOTAL_HOURS, KILOMETERS_PER_HOUR));
+        db.execSQL(String.format("CREATE TABLE " +
+                        "%s (" +
+                        "%s INTEGER PRIMARY KEY AUTOINCREMENT ," +
+                        "%s REAL NOT NULL," +
+                        "%s REAL NOT NULL," +
+                        "%s REAL NOT NULL," +
+                        "date DEFAULT (datetime('now','localtime')));",
+                TABLE_NAME, _ID, TOTAL_KILOMETERS_RAN, TOTAL_HOURS, KILOMETERS_PER_HOUR));
         Log.d(TAG, "onCreate");
     }
 

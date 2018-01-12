@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.net.Uri;
 import android.nfc.Tag;
 import android.support.v7.app.AppCompatActivity;
@@ -15,10 +16,16 @@ import android.widget.SimpleCursorAdapter;
 import com.example.database.backend.DBHelper;
 import com.example.database.backend.PaceProviderContract;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.series.BarGraphSeries;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 
+import java.net.URI;
+import java.security.Key;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -49,25 +56,21 @@ public class ProfileViewController extends AppCompatActivity {
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile_view);
-        queryContentProvider();
-
         this.mUtilityLibrary = new UtilityLibrary(this);
-
         paceGraph = (GraphView) findViewById(R.id.paceGraph);
-        LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-                new DataPoint(0, 1),
-                new DataPoint(1, 5),
-                new DataPoint(2, 3),
-                new DataPoint(3, 2),
-                new DataPoint(4, 6)
-        });
+        // Populating with straight data.
+        BarGraphSeries<DataPoint> series = new BarGraphSeries<>();
 
-        series.appendData(new DataPoint(5, 7), true, 7);
-
-        paceGraph.addSeries(series);
+        try {
+            series = createLineGraphSeries();
+            paceGraph.addSeries(series);
+            queryContentProvider();
+        } catch (Exception e) {
+            Log.d(TAG, "No data to display");
+        }
     }
 
-    public LineGraphSeries<DataPoint> createLineGraphSeries() {
+    public BarGraphSeries<DataPoint> createLineGraphSeries() {
         Log.d(TAG, "createLineGraphSeries");
 
         String[] projection = new String[] {
@@ -78,9 +81,12 @@ public class ProfileViewController extends AppCompatActivity {
                 PaceProviderContract.DATE,
         };
 
-        Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
+        DBHelper dbHelper = new DBHelper(this);
+        Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null
+        , null);
 
         ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
+
         ContentValues map;
         if(c.moveToFirst()) {
             do {
@@ -90,14 +96,46 @@ public class ProfileViewController extends AppCompatActivity {
                 retVal.add(map);
             } while(c.moveToNext());
         }
-        c.close();
-        // Can iterate through the content values list and then just pop each value in based off the date object and organize it like that
-//        for (int i = 0; i < retVal.size(); i++) {
-//            map.get()
-//        }
-//
 
-        return null;
+        /// need to fetch the specific values - date time and
+
+        // declare an array of total kilometers ran - floa
+        ArrayList<Float> kilometers_ran = new ArrayList<Float>();
+        ArrayList<Float> all_speeds = new ArrayList<Float>();
+        ArrayList<Date> date = new ArrayList<Date>();
+
+
+        // declare an array of all the available dates - get up only the most recent 7 days. display those days
+
+        for (int i = 0; i < retVal.size(); i++) {
+            for (int j = 0; j < projection.length; j++) {
+                if (projection[j] == PaceProviderContract.TOTAL_KILOMETERS_RAN) {
+                    kilometers_ran.add((Float) retVal.get(i).get(projection[j]));
+                } else if (projection[j] == PaceProviderContract.DATE) {
+                    kilometers_ran.add((Float) retVal.get(i).get(projection[j]));
+                } else if (projection[j] == PaceProviderContract.KILOMETERS_PER_HOUR) {
+                    kilometers_ran.add((Float) retVal.get(i).get(projection[j]));
+                }
+            }
+        }
+
+        BarGraphSeries<DataPoint> series = new BarGraphSeries<>();
+        SimpleDateFormat simpleDateformat = new SimpleDateFormat("E"); // the day of the week abbreviated
+
+        for (int k = 0; k < kilometers_ran.size(); k++) {
+            series.appendData(new DataPoint(date.get(k), kilometers_ran.get(k)), true, 7);
+        }
+
+
+        series.setSpacing(50);
+
+        // draw values on top
+        series.setDrawValuesOnTop(true);
+        series.setValuesOnTopColor(Color.RED);
+        return series;
+
+
+
     }
 
     /**
@@ -131,6 +169,7 @@ public class ProfileViewController extends AppCompatActivity {
                 R.id.speed,
                 R.id.date
         };
+
         Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
 
         if (c != null && c.getCount() > 0) {
@@ -187,7 +226,6 @@ public class ProfileViewController extends AppCompatActivity {
             };
 
             Cursor c = getContentResolver().query(PaceProviderContract.CONTENT_URI, projection, null, null, null);
-
             dataAdapter = new SimpleCursorAdapter(
                     this,
                     R.layout.pace_data_listview_row,
@@ -195,14 +233,15 @@ public class ProfileViewController extends AppCompatActivity {
                     colsToDisplay,
                     colResIds,
                     0);
-
             runningStatsListView = findViewById(R.id.runningStatsListView);
             runningStatsListView.setAdapter(dataAdapter);
-            Log.d(TAG, "VIEW " + runningStatsListView.getItemAtPosition(0
-            ));
+
+
+            c.close();
 
         } catch (Exception e) {
             Log.d(EXCEPTION_TAG, e.toString());
+
         }
     }
 

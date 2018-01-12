@@ -39,18 +39,22 @@ public class PaceContentProvider extends ContentProvider {
     * UriMatcher instance to return a value of 1 when the URI references the entire products table,
     * and a value of 2 when the URI references the ID of a specific row in the products table
     * */
-    public static final int PACE_DATA = 2;
-    public static final int PACE_DATA_ID = 1;
+    public static final int PACE_DATA = 1;
+    public static final int PACE_DATA_ID = 2;
 
 
 
     static {
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        // routes to main database
+//        // routes to main database
         uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/",  PACE_DATA);
-        // _id uri
-        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/#", PACE_DATA_ID);
+//        // _id uri
+//        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/#", PACE_DATA);
+
+//        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PaceProviderContract.PACE_TABLE, PACE_DATA);
+        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PaceProviderContract.PACE_TABLE + "/#",
+                PACE_DATA_ID);
     }
 
     /**
@@ -88,18 +92,30 @@ public class PaceContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         Log.d(TAG, "query | Matched URI: " + uriMatcher.match(uri));
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        switch(uriMatcher.match(uri))
+        SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
+        queryBuilder.setTables(DBHelper.getTableName());
+
+        int uriType = uriMatcher.match(uri);
+
+        switch(uriType)
         {
             case PACE_DATA_ID: // The case where we are fetching a specific id
                 selection = "_ID = " + uri.getLastPathSegment();
+                queryBuilder.appendWhere(PaceProviderContract._ID + "="
+                        + uri.getLastPathSegment());
+                break;
             case PACE_DATA: // The case where we are fetching all values
-                String q7 = String.format("SELECT * FROM " + PACE_TABLE);
-                return db.rawQuery(q7, selectionArgs);
+//                String q7 = String.format("SELECT * FROM " + PACE_TABLE);
+//                return db.rawQuery(q7, selectionArgs);
+                break;
             default:
                 return null;
         }
+        Cursor cursor = queryBuilder.query(dbHelper.getReadableDatabase(),
+                projection, selection, selectionArgs, null, null, sortOrder);
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+        return cursor;
     }
 
     /**

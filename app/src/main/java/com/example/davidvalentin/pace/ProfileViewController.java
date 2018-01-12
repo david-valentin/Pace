@@ -140,6 +140,7 @@ public class ProfileViewController extends AppCompatActivity {
             paceGraph.addSeries(series);
 
             ArrayList<String> date = getSpecificColumnValuesForDate(PaceProviderContract.DATE);
+
             paceGraph.getGridLabelRenderer().setLabelFormatter(new DateAsXAxisLabelFormatter(getActivity()));
             paceGraph.getGridLabelRenderer().setNumHorizontalLabels(date.size());
 
@@ -249,13 +250,16 @@ public class ProfileViewController extends AppCompatActivity {
                 , null);
         ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
 
+        // MAXIMUM NUMBER OF DAYS WE WANT TO DISPLAY ON THE GRAPH - LIMIT IT 
+        int MAX_DAYS = 7;
         ContentValues map;
-        if(c.moveToFirst()) {
+        if(c.moveToFirst() && MAX_DAYS > 0) {
             do {
                 map = new ContentValues();
                 // gets the content
                 DatabaseUtils.cursorRowToContentValues(c, map);
                 retVal.add(map);
+                --MAX_DAYS;
             } while(c.moveToNext());
         } else {
             Log.d(TAG, "No values were returned. Retval is null.");

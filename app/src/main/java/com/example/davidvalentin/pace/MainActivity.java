@@ -129,12 +129,13 @@ public class MainActivity extends AppCompatActivity {
     public void onPause() {
         Log.d(TAG, "onPause");
         super.onPause();
+        if (mRunningServiceBinder != null) {
+            if (mRunningServiceBinder.isRunnerRunning()) {
+                createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
+            } else if (mRunningServiceBinder.isRunnerRunning() == false) {
+                createDistanceAndTimeNotif(NOTIF_RESPONSES[0], CHANNEL_ID);
 
-        if (mRunningServiceBinder.isRunnerRunning()) {
-            createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
-        } else if (mRunningServiceBinder.isRunnerRunning() == false) {
-            createDistanceAndTimeNotif(NOTIF_RESPONSES[0], CHANNEL_ID);
-
+            }
         }
     }
 

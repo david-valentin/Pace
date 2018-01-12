@@ -250,7 +250,7 @@ public class ProfileViewController extends AppCompatActivity {
                 , null);
         ArrayList<ContentValues> retVal = new ArrayList<ContentValues>();
 
-        // MAXIMUM NUMBER OF DAYS WE WANT TO DISPLAY ON THE GRAPH - LIMIT IT 
+        // MAXIMUM NUMBER OF DAYS WE WANT TO DISPLAY ON THE GRAPH - LIMIT IT
         int MAX_DAYS = 7;
         ContentValues map;
         if(c.moveToFirst() && MAX_DAYS > 0) {

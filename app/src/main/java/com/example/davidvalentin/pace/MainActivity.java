@@ -260,10 +260,6 @@ public class MainActivity extends AppCompatActivity {
             mRunningServiceBinder.run();
         } else if (!mRunningServiceBinder.isRunnerRunning()) {
             mRunningServiceBinder.run();
-        } else if (serviceConnection != null) {
-            Log.d(TAG, "Callback is dead");
-            this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
-            this.startService(new Intent(this, RunningTrackerService.class));
         }
     }
 
@@ -323,7 +319,11 @@ public class MainActivity extends AppCompatActivity {
             // Src: https://stackoverflow.com/questions/2478517/how-to-display-a-yes-no-dialog-box-on-android
             AlertDialog.Builder check = createAlertDialog();
             check.show();
-        } else {
+            // Make sure we aren't running while trying to save
+        } else if (mRunningServiceBinder.isRunnerRunning()) {
+            Toast alertToast = mUtilityLibrary.createToast("Cannot save while you are running!", Toast.LENGTH_LONG);
+            alertToast.show();
+        } else if (mRunningServiceBinder.getRunner().getState() != Runner.RunnerState.RUNNING) {
             mRunningServiceBinder.save();
             saveData();
         }
@@ -488,7 +488,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * saveData
+     * Saves the current distance ran and the current time
+     *  1. Only executed if the user is not Running
      */
     public void saveData() {
         Log.d(TAG, "saveData");
@@ -497,7 +498,6 @@ public class MainActivity extends AppCompatActivity {
             Double totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
             Float totalTime = mUtilityLibrary.convertSecondsToHours(this.getElapsedTime());
             Double speed = totalDistanceRan/totalTime;
-
             Log.d(TAG, "Total Distance Ran: " + totalDistanceRan.toString() + "\n" +
                             "Total Time: " + totalTime.toString() + '\n' +
                             "Speed: " + speed.toString()
@@ -505,9 +505,7 @@ public class MainActivity extends AppCompatActivity {
             db.execSQL("INSERT INTO " + dbHelper.getTableName() + "(" + PaceProviderContract.TOTAL_KILOMETERS_RAN + "," + PaceProviderContract.TOTAL_HOURS + "," +
                     PaceProviderContract.KILOMETERS_PER_HOUR + ")" + "VALUES " +
                     "('" + totalDistanceRan + "','" + totalTime + "','" + speed + "');");
-
             db.close(); // Close access to the database after we are done with our query
-
             Toast alertToast = mUtilityLibrary.createToast("Your data was saved!", Toast.LENGTH_LONG);
             alertToast.show();
         } catch (Exception e) {

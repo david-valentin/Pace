@@ -87,18 +87,6 @@ public class Runner {
         }
     }
 
-    /**
-     * Initiates that the runner has:
-     *  1. Paused Running => i.e. in the Paused state
-     *  2. Would like to record the time and distance travelled
-     *
-     * */
-    public void save() {
-        Log.d(TAG, "save");
-        if(this.state != RunnerState.RUNNING) {
-            this.state = RunnerState.PAUSED;
-        }
-    }
 
     /**
      *  Initiates that the runner has paused running but would still like to:

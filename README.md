@@ -1,6 +1,6 @@
-# Project Title
+# PACE
 
-One Paragraph of project description goes here
+Pace is a fitness app that is meant specifically for joggers and running enthusiasts. The app tracks the users time and distance travelled. It logs the distances and their respective times in the user’s profile, which allows the user to see the progress made in their overall fitness goals.
 
 ## Getting Started
 
@@ -68,7 +68,7 @@ Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c6
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
 
 ## Authors
 
@@ -85,4 +85,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 * Hat tip to anyone who's code was used
 * Inspiration
 * etc
-

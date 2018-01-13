@@ -140,13 +140,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  onPause creates a notification and creates a notification to resume the activity
+     *  onStop creates a notification and creates a notification to resume the activity
      *  and the service will continue to run
      *
      * */
     @Override
     public void onStop() {
-        Log.d(TAG, "onResume");
+        Log.d(TAG, "onStop");
         super.onStop();
         if (mRunningServiceBinder.isRunnerRunning()) {
             createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
@@ -154,26 +154,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *  Creates a notification that displays the last recorded distance and time
-     *
+     * On start command will bind the service  
      */
-    private void createDistanceAndTimeNotif(String msg, int CHANNEL_ID) {
-        Log.d(TAG, "createDistanceAndTimeNotif");
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
-        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        // If the service is still running => Create a notification to the user of their last recorded distance and time
-        if (mRunningServiceBinder.isRunnerRunning()) {
-            mNotification = mUtilityLibrary.createNotification(msg, getResources().getString(R.string.app_name),
-                    null
-                    , pIntent);
-            mNotification.setStyle(new Notification.BigTextStyle())
-                        .setStyle(new Notification.BigTextStyle()
-                                .bigText(String.format("%s %s\n%s %s", NOTIF_DISTANCE_TEXT, mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()), NOTIF_TIME_TEXT, timeFormat(getElapsedTime()))));
-
-
-            // Get the channel Id
-            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
-        }
+    @Override
+    protected void onStart() {
+        super.onStart();
+        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     /**
@@ -547,12 +533,28 @@ public class MainActivity extends AppCompatActivity {
         return builder;
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
-    }
+    /**
+     *  Creates a notification that displays the last recorded distance and time
+     *
+     */
+    private void createDistanceAndTimeNotif(String msg, int CHANNEL_ID) {
+        Log.d(TAG, "createDistanceAndTimeNotif");
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class),0);
+        mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        // If the service is still running => Create a notification to the user of their last recorded distance and time
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            mNotification = mUtilityLibrary.createNotification(msg, getResources().getString(R.string.app_name),
+                    null
+                    , pIntent);
+            mNotification.setStyle(new Notification.BigTextStyle())
+                    .setStyle(new Notification.BigTextStyle()
+                            .bigText(String.format("%s %s\n%s %s", NOTIF_DISTANCE_TEXT, mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()), NOTIF_TIME_TEXT, timeFormat(getElapsedTime()))));
 
+
+            // Get the channel Id
+            mNotificationManager.notify(CHANNEL_ID, mNotification.build());
+        }
+    }
 
     /**
      *  Binds and starts the service to the main activity

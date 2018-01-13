@@ -488,9 +488,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "saveData");
         try {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            Double totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
+            Float totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
             Float totalTime = mUtilityLibrary.convertSecondsToHours(this.getElapsedTime());
-            Double speed = totalDistanceRan/totalTime;
+            Float speed = totalDistanceRan/totalTime;
             Log.d(TAG, "Total Distance Ran: " + totalDistanceRan.toString() + "\n" +
                             "Total Time: " + totalTime.toString() + '\n' +
                             "Speed: " + speed.toString()

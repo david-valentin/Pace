@@ -9,6 +9,8 @@ import static com.example.database.backend.PaceProviderContract.*;
 import static com.example.database.backend.PaceProviderContract.KILOMETERS_PER_HOUR;
 
 /**
+ * DBHelper acts as a handler for the Sqlite Database
+ *
  * Created by davidvalentin on 11/24/17.
  */
 
@@ -20,7 +22,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME  = "paceDB";
 
     /**
-     *
+     *  Construct #1
      * @param context
      * @param name
      * @param factory
@@ -34,6 +36,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /***
+     * Constructor #2
      *
      * @param context
      */
@@ -44,6 +47,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Creates the table for querying
      *
      * @param db
      */
@@ -61,6 +65,7 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
+     * Destroys the old table and creates a new table
      *
      * @param db
      * @param oldVersion

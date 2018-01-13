@@ -28,13 +28,10 @@ import static com.example.database.backend.PaceProviderContract.PACE_TABLE;
  * */
 public class PaceContentProvider extends ContentProvider {
 
-
     // Aggregation
     private DBHelper dbHelper = null;
     private static final String TAG = "PaceContentProvider";
-
     private static final UriMatcher uriMatcher;
-
     /*
     * UriMatcher instance to return a value of 1 when the URI references the entire products table,
     * and a value of 2 when the URI references the ID of a specific row in the products table
@@ -42,17 +39,11 @@ public class PaceContentProvider extends ContentProvider {
     public static final int PACE_DATA = 1;
     public static final int PACE_DATA_ID = 2;
 
-
-
     static {
-
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-//        // routes to main database
+        // routes to main database
         uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/",  PACE_DATA);
-//        // _id uri
-//        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/#", PACE_DATA);
-
-//        uriMatcher.addURI(PaceProviderContract.AUTHORITY, PaceProviderContract.PACE_TABLE, PACE_DATA);
+        // _id uri
         uriMatcher.addURI(PaceProviderContract.AUTHORITY, PaceProviderContract.PACE_TABLE + "/#",
                 PACE_DATA_ID);
     }

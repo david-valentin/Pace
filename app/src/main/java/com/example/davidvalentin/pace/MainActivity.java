@@ -30,6 +30,12 @@ import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+/**
+ *  MainActivity is the main activity launched at the start of the application.
+ *  It is where we initialize the RunningTrackerServiceBinder and TimerHandler
+ *
+ */
 public class MainActivity extends AppCompatActivity {
 
     // Static member variables
@@ -278,8 +284,8 @@ public class MainActivity extends AppCompatActivity {
         // Make sure that the timer object isn't null
         if (timer != null) {
             killTimer();
-            // Stop the service from continue tracking
-            if (mRunningServiceBinder != null) {
+            // Make sure the object isn't null and that we aren't running
+            if (mRunningServiceBinder != null && !mRunningServiceBinder.isRunnerRunning()) {
                 Log.d(TAG, "Stopping and Resetting Service Binder");
                 // Stop the service binder
                 mRunningServiceBinder.restart();
@@ -311,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             Toast alertToast = mUtilityLibrary.createToast("Cannot save while you are running!", Toast.LENGTH_LONG);
             alertToast.show();
         } else if (mRunningServiceBinder.getRunner().getState() != Runner.RunnerState.RUNNING) {
-            mRunningServiceBinder.save();
+            mRunningServiceBinder.pause();
             saveData();
         }
     }
@@ -482,9 +488,9 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "saveData");
         try {
             SQLiteDatabase db = dbHelper.getWritableDatabase();
-            Double totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
+            Float totalDistanceRan = mUtilityLibrary.convertMetersToKilometers(mRunningServiceBinder.getmRunnerThread().getTotalDistanceRan());
             Float totalTime = mUtilityLibrary.convertSecondsToHours(this.getElapsedTime());
-            Double speed = totalDistanceRan/totalTime;
+            Float speed = totalDistanceRan/totalTime;
             Log.d(TAG, "Total Distance Ran: " + totalDistanceRan.toString() + "\n" +
                             "Total Time: " + totalTime.toString() + '\n' +
                             "Speed: " + speed.toString()
@@ -514,7 +520,7 @@ public class MainActivity extends AppCompatActivity {
                     case DialogInterface.BUTTON_POSITIVE:
                         //Yes button clicked
                         dialog.dismiss();
-                        mRunningServiceBinder.save();
+                        mRunningServiceBinder.pause();
                         saveData();
                         break;
 

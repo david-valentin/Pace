@@ -1,8 +1,5 @@
 package com.example.davidvalentin.pace;
 
-/**
- * Created by davidvalentin on 1/2/18.
- */
 
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -28,6 +25,9 @@ import java.util.ArrayList;
 
 /**
  *  A class that holds several static functions
+ *  shared across all classes
+ *
+ *  Created by davidvalentin on 1/2/18.
  *
  * */
 public class UtilityLibrary {
@@ -41,8 +41,8 @@ public class UtilityLibrary {
     private Context context;
 
     // Static Variables
-    private static final double metersToMiles = 0.000621371;
-    private static final double metersToKilometers = 0.001;
+    private static final Float metersToMiles = 0.000621371f;
+    private static final Float metersToKilometers = 0.001f;
     private static final String onClickColorChange = "#1D78C6";
     private static final String onClickOGColor = "#2294F7";
     private static final int SECOND_TO_HOURS = 3600;
@@ -96,9 +96,9 @@ public class UtilityLibrary {
      * @param meters the number of meters ran
      * @return the string representation of the number of miles
      * */
-    public String convertMetersToMilesString(double meters) {
+    public String convertMetersToMilesString(Float meters) {
         Log.d(TAG, "convertMetersToMilesString");
-        double miles =  getMetersToMiles() * meters;
+        Float miles =  getMetersToMiles() * meters;
         return String.format("%.2f", miles);
     }
 
@@ -108,9 +108,9 @@ public class UtilityLibrary {
      * @param meters the number of meters ran
      * @return the string representation of the number of kilometers
      * */
-    public String convertMetersToKilometersString(double meters) {
+    public String convertMetersToKilometersString(Float meters) {
         Log.d(TAG, "convertMetersToKilometersSting");
-        double miles = getMetersToKilometers() * meters ;
+        Float miles = getMetersToKilometers() * meters ;
         return String.format("%.2f", miles);
     }
 
@@ -119,9 +119,9 @@ public class UtilityLibrary {
      * @param meters
      * @return
      */
-    public Double convertMetersToKilometers(double meters) {
+    public Float convertMetersToKilometers(Float meters) {
         Log.d(TAG, "convertMetersToKilometers");
-        Double miles = getMetersToKilometers() * meters;
+        Float miles = getMetersToKilometers() * meters;
         return miles;
     }
 
@@ -271,26 +271,6 @@ public class UtilityLibrary {
     }
 
 
-    public LineGraphSeries<DataPoint> createLineGraphSeries(int numberOfDataPoints, ArrayList<ContentValues> cursorValues) {
-
-//        for (int i = numberOfDataPoints; i < numberOfDataPoints; i++) {
-//
-//            LineGraphSeries<DataPoint> series = new LineGraphSeries<>(new DataPoint[] {
-//                    new DataPoint(0, 1),
-//                    new DataPoint(1, 5),
-//                    new DataPoint(2, 3),
-//                    new DataPoint(3, 2),
-//                    new DataPoint(4, 6)
-//            });
-//        }
-//
-//        return series;
-
-        return null;
-    }
-
-
-
     /**
      *
      * Getters and Setters for UtilityLibrary
@@ -301,11 +281,11 @@ public class UtilityLibrary {
         return ApplicationName;
     }
 
-    public static double getMetersToMiles() {
+    public static Float getMetersToMiles() {
         return metersToMiles;
     }
 
-    public static double getMetersToKilometers() {
+    public static Float getMetersToKilometers() {
         return metersToKilometers;
     }
 

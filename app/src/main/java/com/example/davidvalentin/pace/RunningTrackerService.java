@@ -124,34 +124,12 @@ public class RunningTrackerService extends Service {
         mRunnerThread.setThreadRunning(true);
     }
 
-    /**
-     *  Saves the current time and current distance traveled to the database
-     *      1. Stops the runnerThread
-     *      2. Gets the last known location and last known time calledback
-     *      3. Updates the databased with that data
-     * */
-    public void save() {
-        Log.d(TAG, "save");
-        mRunnerThread.setThreadRunning(false);
-        runner.save();
-    }
-
     public void restart() {
         Log.d(TAG, "restart");
         resetDistances();
 //        mRunnerThread.setThreadRunning(false); - Already should be not-running since its paused
         runner.restart();
-    }
 
-    /**
-     *  Stops the thread from running and the runner class is not longer running
-     *      1. Stops the runnerThread
-     *      2. Stops location listening => The runner is officially done running
-     * */
-    public void stop() {
-        Log.d(TAG, "stop");
-        mRunnerThread.setThreadRunning(false);
-        runner.stop();
     }
 
     /**
@@ -201,9 +179,6 @@ public class RunningTrackerService extends Service {
             return false;
         } else if (runner.getState() == Runner.RunnerState.RESTARTED) {
             Log.d(TAG, "RESTARTED");
-            return false;
-        } else if (runner.getState() == Runner.RunnerState.SAVED) {
-            Log.d(TAG, "SAVED");
             return false;
         } else {
             Log.d(TAG, "ANOMALY: " + runner.getState().toString());
@@ -360,14 +335,6 @@ public class RunningTrackerService extends Service {
 
         void run(){
             RunningTrackerService.this.run();
-        }
-
-        void save(){
-            RunningTrackerService.this.save();
-        }
-
-        void stop(){
-            RunningTrackerService.this.stop();
         }
 
         void pause(){

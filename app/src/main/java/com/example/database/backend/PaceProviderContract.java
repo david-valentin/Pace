@@ -3,6 +3,8 @@ package com.example.database.backend;
 import android.net.Uri;
 
 /**
+ * Provides static strings used for the creation fo the database and table
+ *
  * Created by davidvalentin on 12/30/17.
  */
 
@@ -12,7 +14,6 @@ public class PaceProviderContract {
 
     public static final String PACE_TABLE = "paceData";
     public static final String DATABASE_NAME = "paceDB";
-
 
     public static final Uri CONTENT_URI = Uri.parse("content://"+ AUTHORITY+ "/" + PACE_TABLE);
 

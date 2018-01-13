@@ -8,23 +8,23 @@ import android.util.Log;
 /**
  * Created by davidvalentin on 12/28/17.
  *
- * Notes:
- *  I figured that I should probably abstract some of the aspects of a Runner
- *  in a Runner class similar to the MP3Player Class
- *
+
  *  The class basically holds some of the properties of a runner
  *      1. Running
+ *      2. Paused
+ *      3. Saved
+ *
+ * TODO:
+ *  Remove the RESTART and SAVED state as they don't do anything
+ *  and really aren't connected to the behavior of the Runner class itself
  *
  */
-
-
 public class Runner {
 
     private static final String TAG = "Runner";
 
     // Protected Member Variables:
     protected int time;
-    protected String timerString;
     protected RunnerState state;
 
     //Location Variables:
@@ -45,10 +45,6 @@ public class Runner {
     *       1. The service != running i.e. unbinded/stopped
     *       2. The location listener != running
     *       3. TextViews != updating => TextViews set to defaults
-    *   STOPPED => The runner has stopped running (pre req to save):
-    *       1. The service = running i.e. unbinded/stopped
-    *       2. The location listener != running i.e. null
-    *       3. TextViews != updating => TextViews set to defaults
     *   PAUSED => The runner has paused their running i.e. for some reason
     *       1. The service = running
     *       2. Location listener = running
@@ -57,8 +53,6 @@ public class Runner {
     public enum RunnerState {
         ERROR,
         RUNNING,
-        SAVED,
-        STOPPED,
         PAUSED,
         RESTARTED
     }
@@ -71,7 +65,7 @@ public class Runner {
      */
     public Runner(Context context) {
         Log.d(TAG, "Runner");
-        this.state = RunnerState.STOPPED;
+        this.state = RunnerState.PAUSED;
         // So that we can instantiate the start location member class in the runnerClass:
         // https://stackoverflow.com/questions/4870667/how-can-i-use-getsystemservice-in-a-non-activity-class-locationmanager
         this.context = context;
@@ -83,7 +77,7 @@ public class Runner {
      * */
     public void run() {
         Log.d(TAG, "run");
-        if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
+        if(this.state == RunnerState.PAUSED) {
             Log.d(TAG, "run");
             this.state = RunnerState.RUNNING;
         // Made a separate if else to know when we are in the restarted state
@@ -93,39 +87,15 @@ public class Runner {
         }
     }
 
-    /**
-     * Initiates that the runner has:
-     *  1. Stopped Running => i.e. in the stopped state
-     *  2. Would like to record the time and distance travelled
-     *
-     * */
-    public void save() {
-        Log.d(TAG, "save");
-        if(this.state != RunnerState.RUNNING) {
-            this.state = RunnerState.SAVED;
-        }
-    }
 
     /**
-     *  Initiates that the runner has stopped running but would still like to:
+     *  Initiates that the runner has paused running but would still like to:
      *      1. Resume their run and track their time
      * */
     public void pause() {
         Log.d(TAG, "pause");
         if(this.state == RunnerState.RUNNING) {
             this.state = RunnerState.PAUSED;
-        }
-    }
-
-    /**
-     *  Initiates that the Runner has stopped running
-     *      1. End their run and stop tracking their time
-     *      2. Potentially record their time
-     * */
-    public void stop() {
-        Log.d(TAG, "stop");
-        if(this !=null) {
-            state = RunnerState.STOPPED;
         }
     }
 

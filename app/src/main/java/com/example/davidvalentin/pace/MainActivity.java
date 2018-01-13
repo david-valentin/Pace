@@ -30,6 +30,12 @@ import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+/**
+ *  MainActivity is the main activity launched at the start of the application.
+ *  It is where we initialize the RunningTrackerServiceBinder and TimerHandler
+ *
+ */
 public class MainActivity extends AppCompatActivity {
 
     // Static member variables

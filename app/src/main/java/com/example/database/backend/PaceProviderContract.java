@@ -3,6 +3,8 @@ package com.example.database.backend;
 import android.net.Uri;
 
 /**
+ * Provides static strings used for the creation fo the database and table
+ *
  * Created by davidvalentin on 12/30/17.
  */
 

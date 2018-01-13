@@ -8,23 +8,23 @@ import android.util.Log;
 /**
  * Created by davidvalentin on 12/28/17.
  *
- * Notes:
- *  I figured that I should probably abstract some of the aspects of a Runner
- *  in a Runner class similar to the MP3Player Class
- *
+
  *  The class basically holds some of the properties of a runner
  *      1. Running
+ *      2. Paused
+ *      3. Saved
+ *
+ * TODO:
+ *  Remove the RESTART and SAVED state as they don't do anything
+ *  and really aren't connected to the behavior of the Runner class itself
  *
  */
-
-
 public class Runner {
 
     private static final String TAG = "Runner";
 
     // Protected Member Variables:
     protected int time;
-    protected String timerString;
     protected RunnerState state;
 
     //Location Variables:
@@ -44,10 +44,6 @@ public class Runner {
     *   SAVED => The runner has stopped and finished their run:
     *       1. The service != running i.e. unbinded/stopped
     *       2. The location listener != running
-    *       3. TextViews != updating => TextViews set to defaults
-    *   STOPPED => The runner has stopped running (pre req to save):
-    *       1. The service = running i.e. unbinded/stopped
-    *       2. The location listener != running i.e. null
     *       3. TextViews != updating => TextViews set to defaults
     *   PAUSED => The runner has paused their running i.e. for some reason
     *       1. The service = running

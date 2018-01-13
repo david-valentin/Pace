@@ -1,8 +1,5 @@
 package com.example.davidvalentin.pace;
 
-/**
- * Created by davidvalentin on 1/2/18.
- */
 
 import android.app.AlertDialog;
 import android.app.Notification;
@@ -28,6 +25,9 @@ import java.util.ArrayList;
 
 /**
  *  A class that holds several static functions
+ *  shared across all classes
+ *
+ *  Created by davidvalentin on 1/2/18.
  *
  * */
 public class UtilityLibrary {

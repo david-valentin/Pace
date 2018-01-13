@@ -41,9 +41,9 @@ public class PaceContentProvider extends ContentProvider {
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-//        // routes to main database
+        // routes to main database
         uriMatcher.addURI(PaceProviderContract.AUTHORITY, PACE_TABLE + "/",  PACE_DATA);
-//        // _id uri
+        // _id uri
         uriMatcher.addURI(PaceProviderContract.AUTHORITY, PaceProviderContract.PACE_TABLE + "/#",
                 PACE_DATA_ID);
     }

@@ -284,8 +284,8 @@ public class MainActivity extends AppCompatActivity {
         // Make sure that the timer object isn't null
         if (timer != null) {
             killTimer();
-            // Stop the service from continue tracking
-            if (mRunningServiceBinder != null) {
+            // Make sure the object isn't null and that we aren't running
+            if (mRunningServiceBinder != null && !mRunningServiceBinder.isRunnerRunning()) {
                 Log.d(TAG, "Stopping and Resetting Service Binder");
                 // Stop the service binder
                 mRunningServiceBinder.restart();
@@ -317,7 +317,7 @@ public class MainActivity extends AppCompatActivity {
             Toast alertToast = mUtilityLibrary.createToast("Cannot save while you are running!", Toast.LENGTH_LONG);
             alertToast.show();
         } else if (mRunningServiceBinder.getRunner().getState() != Runner.RunnerState.RUNNING) {
-            mRunningServiceBinder.save();
+            mRunningServiceBinder.pause();
             saveData();
         }
     }
@@ -520,7 +520,7 @@ public class MainActivity extends AppCompatActivity {
                     case DialogInterface.BUTTON_POSITIVE:
                         //Yes button clicked
                         dialog.dismiss();
-                        mRunningServiceBinder.save();
+                        mRunningServiceBinder.pause();
                         saveData();
                         break;
 

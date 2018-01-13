@@ -53,7 +53,6 @@ public class Runner {
     public enum RunnerState {
         ERROR,
         RUNNING,
-        SAVED,
         PAUSED,
         RESTARTED
     }
@@ -97,7 +96,7 @@ public class Runner {
     public void save() {
         Log.d(TAG, "save");
         if(this.state != RunnerState.RUNNING) {
-            this.state = RunnerState.SAVED;
+            this.state = RunnerState.PAUSED;
         }
     }
 

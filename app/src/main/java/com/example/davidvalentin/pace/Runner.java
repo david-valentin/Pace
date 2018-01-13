@@ -58,7 +58,6 @@ public class Runner {
         ERROR,
         RUNNING,
         SAVED,
-        STOPPED,
         PAUSED,
         RESTARTED
     }
@@ -71,7 +70,7 @@ public class Runner {
      */
     public Runner(Context context) {
         Log.d(TAG, "Runner");
-        this.state = RunnerState.STOPPED;
+        this.state = RunnerState.PAUSED;
         // So that we can instantiate the start location member class in the runnerClass:
         // https://stackoverflow.com/questions/4870667/how-can-i-use-getsystemservice-in-a-non-activity-class-locationmanager
         this.context = context;
@@ -83,7 +82,7 @@ public class Runner {
      * */
     public void run() {
         Log.d(TAG, "run");
-        if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
+        if(this.state == RunnerState.PAUSED) {
             Log.d(TAG, "run");
             this.state = RunnerState.RUNNING;
         // Made a separate if else to know when we are in the restarted state
@@ -95,7 +94,7 @@ public class Runner {
 
     /**
      * Initiates that the runner has:
-     *  1. Stopped Running => i.e. in the stopped state
+     *  1. Paused Running => i.e. in the Paused state
      *  2. Would like to record the time and distance travelled
      *
      * */
@@ -107,25 +106,13 @@ public class Runner {
     }
 
     /**
-     *  Initiates that the runner has stopped running but would still like to:
+     *  Initiates that the runner has paused running but would still like to:
      *      1. Resume their run and track their time
      * */
     public void pause() {
         Log.d(TAG, "pause");
         if(this.state == RunnerState.RUNNING) {
             this.state = RunnerState.PAUSED;
-        }
-    }
-
-    /**
-     *  Initiates that the Runner has stopped running
-     *      1. End their run and stop tracking their time
-     *      2. Potentially record their time
-     * */
-    public void stop() {
-        Log.d(TAG, "stop");
-        if(this !=null) {
-            state = RunnerState.STOPPED;
         }
     }
 

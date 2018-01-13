@@ -144,17 +144,6 @@ public class RunningTrackerService extends Service {
     }
 
     /**
-     *  Stops the thread from running and the runner class is not longer running
-     *      1. Stops the runnerThread
-     *      2. Stops location listening => The runner is officially done running
-     * */
-    public void stop() {
-        Log.d(TAG, "stop");
-        mRunnerThread.setThreadRunning(false);
-        runner.stop();
-    }
-
-    /**
      *  Pauses the runner
      *      1. runnerThread is still running
      *      2. locationListener is still listening
@@ -364,10 +353,6 @@ public class RunningTrackerService extends Service {
 
         void save(){
             RunningTrackerService.this.save();
-        }
-
-        void stop(){
-            RunningTrackerService.this.stop();
         }
 
         void pause(){

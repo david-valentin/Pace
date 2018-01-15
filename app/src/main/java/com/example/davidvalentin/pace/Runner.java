@@ -12,7 +12,7 @@ import android.util.Log;
  *  The class basically holds some of the properties of a runner
  *      1. Running
  *      2. Paused
- *      3. Saved
+ *      3. Restarted
  *
  * TODO:
  *  Remove the RESTART and SAVED state as they don't do anything

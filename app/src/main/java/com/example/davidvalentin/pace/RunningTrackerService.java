@@ -1,6 +1,5 @@
 package com.example.davidvalentin.pace;
 
-import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -14,7 +13,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 

@@ -11,16 +11,10 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.graphics.Color;
 import android.os.Handler;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.jjoe64.graphview.series.DataPoint;
-import com.jjoe64.graphview.series.LineGraphSeries;
-
-import java.sql.Date;
 import java.util.ArrayList;
 
 /**
@@ -155,6 +149,7 @@ public class UtilityLibrary {
     }
 
     /**
+     * Converts seconds to hours appropriately
      *
      * @param elapsedTime
      * @return
@@ -166,31 +161,12 @@ public class UtilityLibrary {
     }
 
     /**
+     * Compares the string text values to the Default text values
      *
+     * @param distanceText
+     * @param timerText
      * @return
      */
-    public AlertDialog createAlertDialog() {
-        Log.d(TAG, "createAlertDialog");
-        AlertDialog.Builder builder = new AlertDialog.Builder(context)
-                                        .setTitle("Confirm")
-                                        .setMessage("Are you sure?");
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing
-                dialog.dismiss();
-            }
-        });
-        AlertDialog alert = builder.create();
-        return alert;
-    }
-
     public boolean checkForDefaultTextValues(TextView distanceText, TextView timerText) {
         Log.d(TAG, "checkForDefaultTextValues");
         if (distanceText.getText().toString().equalsIgnoreCase(DEFAULT_DISTANCE_TEXT) && timerText.getText().toString().equalsIgnoreCase(DEFAULT_TIME_TEXT)) {
@@ -252,24 +228,6 @@ public class UtilityLibrary {
             return false;
         }
     }
-
-
-    public String[] formatUserDataText(String colsToDisplay[]) {
-        Log.d(TAG, "formatUserDataText");
-        String reformattedValues[] = new String[]{};
-        for (int i = 0; i < colsToDisplay.length; i++) {
-            // When it will be the date object
-            if (i != 3) {
-                int indexOfDecimal = colsToDisplay[i].indexOf('.');
-                // Get 2 chars after the . and then substring it => Ugly I know..
-                reformattedValues[i] = colsToDisplay[i].substring(0, indexOfDecimal+2);
-            } else {
-                reformattedValues[i] = colsToDisplay[i];
-            }
-        }
-        return reformattedValues;
-    }
-
 
     /**
      *

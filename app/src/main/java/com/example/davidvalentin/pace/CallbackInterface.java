@@ -7,6 +7,6 @@ package com.example.davidvalentin.pace;
 public interface CallbackInterface {
 
     // Reports the progress of the run back to the main thread...I think
-    public void distanceRan(float currentDistance);
+    void distanceRan(float currentDistance);
 
 }

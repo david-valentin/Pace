@@ -30,6 +30,10 @@ import java.lang.ref.WeakReference;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * TODO:
+ * 1. Fix it so that distance text on screen rotation is updated both on not running and running. ahve to update the mRunninServiceBinder object but its null
+ */
 
 /**
  *  MainActivity is the main activity launched at the start of the application.

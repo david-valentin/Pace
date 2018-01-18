@@ -142,7 +142,6 @@ public class UtilityLibrary {
                 } else {
                     //Log.d(TAG, "Handler is dead");
                     btn.setBackgroundColor(Color.parseColor(onClickOGColor));
-
                 }
             }
         }, 0);

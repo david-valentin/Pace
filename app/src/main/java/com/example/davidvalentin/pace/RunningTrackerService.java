@@ -36,8 +36,8 @@ public class RunningTrackerService extends Service {
     RemoteCallbackList<RunningServiceBinder> remoteCallbackList = new RemoteCallbackList<RunningServiceBinder>();
 
     //Location Variables:
-    private LocationManager locationManager;
-    private MyLocationListener locationListener;
+    private LocationManager locationManager = null;
+    private MyLocationListener locationListener = null;
 
     // Member Variables to resume the service
     private NotificationManager mNotificationManager;
@@ -222,7 +222,7 @@ public class RunningTrackerService extends Service {
         private boolean threadRunning = true;
 
         // Keeps track of the difference in distance
-        private float currentDistanceTravelled ;
+        private float currentDistanceTravelled;
 
         // Keeps track of the total distance travelled
         private float totalDistanceRan;
@@ -266,17 +266,11 @@ public class RunningTrackerService extends Service {
                 if (runner.getState() == Runner.RunnerState.RUNNING) {
                     try {Thread.sleep(1000);} catch (Exception e) {Log.d(EXCEPTION_TAG, "Error Message: " + e.toString());}
                     try {
-
                         runner.setIntermediaryLocation(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)); // Update the intermediary location as the most recent location
-
                         currentDistanceTravelled = runner.getIntermediaryLocation().distanceTo(runner.getStartLocation()); // get the distance between the two points
-
                         runner.setStartLocation(runner.getIntermediaryLocation()); // Set the new start location as the intermediary location => Allows us to accurately capture the totalDistanceRan
-
                         setSpeed(locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER).getSpeed()); // Get the speed from the last location
-
                         totalDistanceRan += currentDistanceTravelled; // Add that distance to the total distance
-
                         Log.d(TAG, "Total Distance Travelled: " + getTotalDistanceRan());
                     } catch (SecurityException e) {
                         Log.d(EXCEPTION_TAG, "Error: " + e.toString());
@@ -304,13 +298,13 @@ public class RunningTrackerService extends Service {
 
         public float getCurrentDistanceTravelled() {return currentDistanceTravelled;}
 
-        public void setCurrentDistanceTravelled(float currentDistanceTravelled) {this.currentDistanceTravelled = currentDistanceTravelled;}
+        protected void setCurrentDistanceTravelled(float currentDistanceTravelled) {this.currentDistanceTravelled = currentDistanceTravelled;}
 
-        public float getTotalDistanceRan() {
+        protected float getTotalDistanceRan() {
             return totalDistanceRan;
         }
 
-        private void setTotalDistanceRan(float totalDistanceRan) {this.totalDistanceRan = totalDistanceRan;}
+        protected void setTotalDistanceRan(float totalDistanceRan) {this.totalDistanceRan = totalDistanceRan;}
 
         public float getSpeed() {return speed;}
 

@@ -59,11 +59,10 @@ public class MainActivity extends AppCompatActivity {
     // Member Variables
     private boolean isTimerRunning = false; // Checks is the timerHandler is running
     private Timer timer; // Timer object that keeps track of time
-    private int elapsedTime = 0; // THe amount of time that has passed since playBtn was clicked
-    private Boolean playOrPause = false; // Bool that checks whether we are playirng or pausing
-    private Float distanceRan;
-    private DBHelper dbHelper = null;
-
+    private int elapsedTime = 0; // The amount of time that has passed since playBtn was clicked
+    private Boolean playOrPause = false; // Bool that checks whether we are playing or pausing
+    private Float distanceRan = 0f; // Updates whenever callback occurs
+    private DBHelper dbHelper = null; // DBHelper object for querying data
 
     // UI/XML Components:
     private ImageButton saveBtn;
@@ -100,10 +99,23 @@ public class MainActivity extends AppCompatActivity {
         // XML TextViews
         distanceText = findViewById(R.id.distanceText);
         timerText = findViewById(R.id.timerText);
-
         // Set the values to zero
-        distanceRan = new Float(0);
-        dbHelper = new DBHelper(this);
+        this.dbHelper = new DBHelper(this);
+
+        if (mRunningServiceBinder != null ) {
+            Log.d(TAG, "Service Binder is not null");
+
+
+            if (mRunningServiceBinder.isRunnerRunning() ) {
+                Log.d(TAG, "Runner Running");
+            }
+
+            if (mRunningServiceBinder.isBinderAlive()) {
+                Log.d(TAG, "Binder alive Running");
+            }
+        }
+
+
     }
 
 
@@ -117,10 +129,16 @@ public class MainActivity extends AppCompatActivity {
             unbindService(serviceConnection);
             serviceConnection = null;
         }
-        //if the mp3player is in stop state then you stop the service
+        //if the RunningServiceBinder is in stop state then you stop the service
         if(!mRunningServiceBinder.isRunnerRunning()){
             this.stopService(new Intent(this, RunningTrackerService.class));
         }
+
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            timer.cancel();
+            timer.purge();
+        }
+
         Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
@@ -140,7 +158,6 @@ public class MainActivity extends AppCompatActivity {
                 createDistanceAndTimeNotif(NOTIF_RESPONSES[1], mRunningServiceBinder.getServiceChannelId());
             } else if (mRunningServiceBinder.isRunnerRunning() == false) {
                 createDistanceAndTimeNotif(NOTIF_RESPONSES[0], CHANNEL_ID);
-
             }
         }
     }
@@ -159,11 +176,74 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        // Save the last distance
+        Log.d(TAG, "onSave distance ran: " + getDistanceRan());
+        Log.d(TAG, "onSave elapsed time: " + elapsedTime);
+
+        if (mUtilityLibrary.checkForDefaultTextValues(distanceText, timerText)) {
+            Log.d(TAG, "Values were empty anyway");
+            outState.putString("Last Distance", mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()));
+            outState.putInt("Last Elapsed Time", elapsedTime);
+            outState.putBoolean("Timer Running ", isTimerRunning()); // See if the timer is running
+            outState.putBoolean("Binder Running", mRunningServiceBinder.isRunnerRunning());
+            outState.putBoolean("Play or Pause", getPlayOrPause());
+        } else {
+            outState.putString("Last Distance", mUtilityLibrary.convertMetersToKilometersString(getDistanceRan()));
+            outState.putInt("Last Elapsed Time", elapsedTime);
+            outState.putBoolean("Timer Running ", isTimerRunning()); // See if the timer is running
+            outState.putBoolean("Binder Running", mRunningServiceBinder.isRunnerRunning());
+            outState.putBoolean("Play or Pause", getPlayOrPause());
+        }
+        super.onSaveInstanceState(outState);
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        Log.d(TAG, "onRestoreInstanceState");
+
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String lastDistanceRan = savedInstanceState.getString("Last Distance");
+        int lastElapsedTime = savedInstanceState.getInt("Last Elapsed Time");
+        Boolean playOrPause = savedInstanceState.getBoolean("Play or Pauase");
+
+        setDistanceRan(Float.valueOf(lastDistanceRan));
+        setElapsedTime(lastElapsedTime);
+        setPlayOrPause(playOrPause);
+
+        updateAllTextValues(playOrPause);
+
+        Log.d(TAG, "onRestoreInstanceState");
+    }
+
+    private void updateAllTextValues(Boolean running) {
+        Log.d(TAG, "updateAllTextValues");
+        if (running) {
+            distanceText = findViewById(R.id.distanceText);
+            distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(getDistanceRan())));
+            timerText = findViewById(R.id.timerText);
+            timerText.setText(String.valueOf(timeFormat(getElapsedTime())));
+        } else {
+            // Updating distance text
+            distanceText = findViewById(R.id.distanceText);
+            distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(getDistanceRan())));
+
+            // Updating Timer Text
+            timerText = findViewById(R.id.timerText);
+            timerText.setText(String.valueOf(timeFormat(getElapsedTime())));
+        }
+    }
+
     /**
      * On start command will bind the service  
      */
     @Override
     protected void onStart() {
+        Log.d(TAG, "onStart");
         super.onStart();
         this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
@@ -215,8 +295,10 @@ public class MainActivity extends AppCompatActivity {
                         setDistanceRan(currentDistance); // Sets my local variable of the distance ran currently even while running
                         // Updates the text of the timer
                         distanceText = findViewById(R.id.distanceText);
-                        Log.d(TAG, "Current Distance: " + currentDistance);
-                        distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(currentDistance)));
+                        Log.d(TAG, "Current Distance: " + getDistanceRan());
+                        distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(getDistanceRan())));
+//                        Log.d(TAG, "Current Distance: " + currentDistance);
+//                        distanceText.setText(String.valueOf(mUtilityLibrary.convertMetersToKilometersString(currentDistance)));
                     }
                 }
             });
@@ -253,6 +335,8 @@ public class MainActivity extends AppCompatActivity {
             mRunningServiceBinder.run();
         } else if (!mRunningServiceBinder.isRunnerRunning()) {
             mRunningServiceBinder.run();
+        } else if (mRunningServiceBinder.isRunnerRunning()) {
+            Log.d(TAG, "CHANGE VIEW");
         }
     }
 

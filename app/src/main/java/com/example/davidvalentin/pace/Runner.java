@@ -54,6 +54,7 @@ public class Runner {
         ERROR,
         RUNNING,
         PAUSED,
+        STOPPED,
         RESTARTED
     }
 
@@ -77,7 +78,7 @@ public class Runner {
      * */
     public void run() {
         Log.d(TAG, "run");
-        if(this.state == RunnerState.PAUSED) {
+        if(this.state == RunnerState.PAUSED || this.state == RunnerState.STOPPED) {
             Log.d(TAG, "run");
             this.state = RunnerState.RUNNING;
         // Made a separate if else to know when we are in the restarted state

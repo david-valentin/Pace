@@ -137,7 +137,7 @@ public class RunningTrackerService extends Service {
         mRunnerThread.setThreadRunning(false);
         locationManager.removeUpdates(locationListener);
         this.stopSelf();
-        runner.pause();
+        runner.stop();
     }
 
     /**

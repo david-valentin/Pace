@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
      * */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         Log.d(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -106,20 +108,10 @@ public class MainActivity extends AppCompatActivity {
         // Set the values to zero
         this.dbHelper = new DBHelper(this);
 
-        if (mRunningServiceBinder != null ) {
-            Log.d(TAG, "Service Binder is not null");
+        if (getPlayOrPause() || isTimerRunning()) {
+            Log.d(TAG, "Play " + getPlayOrPause() + " isTimerRunning: " + isTimerRunning());
 
-
-            if (mRunningServiceBinder.isRunnerRunning() ) {
-                Log.d(TAG, "Runner Running");
-            }
-
-            if (mRunningServiceBinder.isBinderAlive()) {
-                Log.d(TAG, "Binder alive Running");
-            }
         }
-
-
     }
 
 
@@ -129,18 +121,28 @@ public class MainActivity extends AppCompatActivity {
      * */
     @Override
     public void onDestroy() {
-        if(serviceConnection !=null ) {
-            unbindService(serviceConnection);
-            serviceConnection = null;
-        }
-        //if the RunningServiceBinder is in stop state then you stop the service
-        if(!mRunningServiceBinder.isRunnerRunning()){
-            this.stopService(new Intent(this, RunningTrackerService.class));
-        }
 
-        if (mRunningServiceBinder.isRunnerRunning()) {
+
+        //if the RunningServiceBinder is in stop state then you stop the service
+        if(!mRunningServiceBinder.isRunnerRunning()) {
+            Log.d(TAG, "Destroy the objects");
             timer.cancel();
             timer.purge();
+        }
+
+        // If were still running than we continue the service and the timer thread executing on the main thread
+        if (mRunningServiceBinder.isRunnerRunning()) {
+            createDistanceAndTimeNotif(NOTIF_RESPONSES[0], CHANNEL_ID);
+            // Keep the service still alive
+        }
+
+        if(serviceConnection != null) {
+            mRunningServiceBinder.stop();
+            unbindService(serviceConnection);
+            serviceConnection = null;
+            timer.cancel();
+            timer.purge();
+            this.stopService(new Intent(this, RunningTrackerService.class));
         }
 
         Log.d(TAG, "onDestroy");
@@ -213,7 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
         String lastDistanceRan = savedInstanceState.getString("Last Distance");
         int lastElapsedTime = savedInstanceState.getInt("Last Elapsed Time");
-        Boolean playOrPause = savedInstanceState.getBoolean("Play or Pauase");
+        Boolean playOrPause = savedInstanceState.getBoolean("Play or Pause");
 
         setDistanceRan(Float.valueOf(lastDistanceRan));
         setElapsedTime(lastElapsedTime);
@@ -248,8 +250,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         Log.d(TAG, "onStart");
-        super.onStart();
         this.bindService(new Intent(this, RunningTrackerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+
+        super.onStart();
     }
 
     /**
@@ -334,14 +337,13 @@ public class MainActivity extends AppCompatActivity {
         mUtilityLibrary.onClickChangeBtnColor(startBtn);
         startTimer();
         mRunningServiceBinder.run();
-        if (mRunningServiceBinder == null) {
-            startMyService();
-            mRunningServiceBinder.run();
-        } else if (!mRunningServiceBinder.isRunnerRunning()) {
-            mRunningServiceBinder.run();
-        } else if (mRunningServiceBinder.isRunnerRunning()) {
-            Log.d(TAG, "CHANGE VIEW");
-        }
+
+//        if (mRunningServiceBinder == null) {
+//        } else if (!mRunningServiceBinder.isRunnerRunning()) {
+//            mRunningServiceBinder.run();
+//        } else if (mRunningServiceBinder.isRunnerRunning()) {
+//            Log.d(TAG, "CHANGE VIEW");
+//        }
     }
 
     /**
@@ -650,13 +652,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     *  Binds and starts the service to the main activity
-     * */
-    public void startMyService() {
-        Log.d(TAG, "startMyService");
-        this.startService(new Intent(this, RunningTrackerService.class));
-    }
+//    /**
+//     *  Binds and starts the service to the main activity
+//     * */
+//    public void startMyService() {
+//        Log.d(TAG, "startMyService");
+//        this.startService(new Intent(this, RunningTrackerService.class));
+//    }
 
 
     /**

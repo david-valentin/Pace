@@ -78,6 +78,8 @@ public class RunningTrackerService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
+
+        mRunnerThread.interrupt();
         mRunnerThread.setThreadRunning(false);
         // Cancel the notification
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -128,6 +130,14 @@ public class RunningTrackerService extends Service {
 //        mRunnerThread.setThreadRunning(false); - Already should be not-running since its paused
         runner.restart();
 
+    }
+
+    public void stop() {
+        Log.d(TAG, "stop");
+        mRunnerThread.setThreadRunning(false);
+        locationManager.removeUpdates(locationListener);
+        this.stopSelf();
+        runner.pause();
     }
 
     /**
@@ -236,6 +246,7 @@ public class RunningTrackerService extends Service {
             setCurrentDistanceTravelled(0);
             setTotalDistanceRan(0);
             // Access it regardless
+
             try {
                 locationManager =
                         (LocationManager)getSystemService(Context.LOCATION_SERVICE);
@@ -249,9 +260,7 @@ public class RunningTrackerService extends Service {
             } catch(SecurityException e) {
                 Log.d(EXCEPTION_TAG, e.toString());
             }
-
             this.start();
-
         }
 
         /**
@@ -331,6 +340,10 @@ public class RunningTrackerService extends Service {
 
         void pause(){
             RunningTrackerService.this.pause();
+        }
+
+        void stop(){
+            RunningTrackerService.this.stop();
         }
 
         public IBinder asBinder() {

@@ -87,6 +87,17 @@ public class Runner {
         }
     }
 
+    /**
+     *  Initiates that the runner has paused running but would still like to:
+     *      1. Resume their run and track their time
+     * */
+    public void stop() {
+        Log.d(TAG, "stop");
+        if(this.state == RunnerState.RUNNING) {
+            this.state = RunnerState.PAUSED;
+        }
+    }
+
 
     /**
      *  Initiates that the runner has paused running but would still like to:
